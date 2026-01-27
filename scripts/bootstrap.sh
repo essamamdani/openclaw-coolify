@@ -16,11 +16,10 @@ if [ ! -f "$CONFIG_FILE" ]; then
   fi
 
 # Resolve bind address
-BIND_ADDR="${CLAWDBOT_GATEWAY_BIND:-0.0.0.0}"
-# If the bind mode is "lan" or "localhost", it might need specific handling, 
-# but for the config file, it usually expects an IP address or a specific mode string.
-# The error "gateway.bind: Invalid input" suggests "0.0.0.0" or the provided env var is failing validation.
-# Let's map "lan" to "0.0.0.0" if that's what's intended, or use the variable directly.
+# The clawdbot JSON config expects a valid IP address for 'bind'.
+# We hardcode 0.0.0.0 here so it listens on all interfaces inside the container.
+# External binding is controlled by CLAWDBOT_GATEWAY_BIND=lan in docker-compose.yaml.
+BIND_ADDR="0.0.0.0"
 
 cat >"$CONFIG_FILE" <<EOF
 {
@@ -47,8 +46,8 @@ else
   TOKEN="$(jq -r '.gateway.auth.token' "$CONFIG_FILE")"
 fi
 
-# Resolve public URL (Coolify injects SERVICE_URL_CLAWDBOT_18789 or SERVICE_FQDN)
-BASE_URL="${SERVICE_URL_CLAWDBOT_18789:-https://$SERVICE_FQDN}"
+# Resolve public URL (Coolify injects SERVICE_URL_CLAWDBOT_18789 or SERVICE_FQDN_CLAWDBOT)
+BASE_URL="${SERVICE_URL_CLAWDBOT_18789:-https://$SERVICE_FQDN_CLAWDBOT}"
 BASE_URL="${BASE_URL:-http://localhost:18789}"
 
 if [ "${CLAWDBOT_PRINT_ACCESS:-1}" = "1" ]; then
