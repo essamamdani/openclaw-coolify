@@ -49,18 +49,24 @@ cat >"$CONFIG_FILE" <<EOF
       "streamMode": "partial"
     },
     "discord": {
-      "dmPolicy": "pairing",
+      "dm": {
+        "policy": "pairing"
+      },
       "groupPolicy": "allowlist"
     },
     "googlechat": {
-      "dmPolicy": "pairing",
+      "dm": {
+        "policy": "pairing"
+      },
       "groupPolicy": "allowlist"
     },
     "slack": {
       "mode": "socket",
       "webhookPath": "/slack/events",
       "userTokenReadOnly": true,
-      "dmPolicy": "pairing",
+      "dm": {
+        "policy": "pairing"
+      },
       "groupPolicy": "allowlist"
     },
     "signal": {
