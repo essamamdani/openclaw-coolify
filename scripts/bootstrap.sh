@@ -316,7 +316,6 @@ cat >"$CONFIG_FILE" <<EOF
     }
   },
   "skills": {
-    "allow": ["*"],
     "allowBundled": ["*"],
     "install": {
       "nodeManager": "bun"
