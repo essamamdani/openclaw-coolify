@@ -174,25 +174,15 @@ services:
     command: ["bash", "/app/scripts/bootstrap.sh"]
     
     # -------------------------------------------------------------------------
-    # TRAEFIK LABELS (Coolify routing)
+    # TRAEFIK LABELS (Coolify handles routing - we only define middlewares)
     # -------------------------------------------------------------------------
+    # NOTE: Do NOT define custom routers here - Coolify auto-generates them
+    # with proper variable substitution. We only define middleware configs.
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.openclaw.rule=Host(`${SERVICE_FQDN_OPENCLAW}`)"
-      - "traefik.http.routers.openclaw.entrypoints=https"
-      - "traefik.http.routers.openclaw.tls=true"
-      - "traefik.http.services.openclaw.loadbalancer.server.port=18789"
-      
-      # WebSocket support headers
-      - "traefik.http.middlewares.openclaw-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
-      
       # Rate limiting middleware (prevents DoS/brute force)
       - "traefik.http.middlewares.openclaw-ratelimit.ratelimit.average=100"
       - "traefik.http.middlewares.openclaw-ratelimit.ratelimit.burst=50"
       - "traefik.http.middlewares.openclaw-ratelimit.ratelimit.period=1m"
-      
-      # Apply middlewares
-      - "traefik.http.routers.openclaw.middlewares=openclaw-headers,openclaw-ratelimit"
     
     # -------------------------------------------------------------------------
     # NETWORK (Isolated from other services)
