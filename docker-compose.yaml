@@ -218,6 +218,10 @@ services:
       - no-new-privileges:true
     read_only: true
     
+    # tmpfs for haproxy config (required - proxy writes to /tmp)
+    tmpfs:
+      - /tmp:size=10M,mode=1777
+    
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     
