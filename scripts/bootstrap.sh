@@ -15,6 +15,13 @@ mkdir -p "$OPENCLAW_STATE/agents/main/sessions"
 chmod 700 "$OPENCLAW_STATE/credentials"
 
 # ----------------------------
+# Security: Ensure config file permissions on every startup
+# ----------------------------
+if [ -f "$CONFIG_FILE" ]; then
+  chmod 600 "$CONFIG_FILE"
+fi
+
+# ----------------------------
 # Seed Agent Workspaces
 # ----------------------------
 seed_agent() {
@@ -105,7 +112,9 @@ if [ ! -f "$CONFIG_FILE" ]; then
       "allowInsecureAuth": false
     },
     "trustedProxies": [
-      "*"
+      "10.0.0.0/8",
+      "172.16.0.0/12",
+      "192.168.0.0/16"
     ],
     "tailscale": {
       "mode": "off",
@@ -123,17 +132,72 @@ if [ ! -f "$CONFIG_FILE" ]; then
         "every": "1h"
       },
       "maxConcurrent": 4,
+      "subagents": {
+        "maxConcurrent": 8
+      },
       "sandbox": {
-        "mode": "non-main",
+        "mode": "all",
+        "workspaceAccess": "none",
         "scope": "session",
+        "docker": {
+          "readOnlyRoot": true,
+          "network": "none",
+          "capDrop": ["ALL"],
+          "pidsLimit": 256,
+          "memory": "1g",
+          "user": "1000:1000",
+          "tmpfs": ["/tmp", "/var/tmp", "/run"]
+        },
         "browser": {
           "enabled": true
+        },
+        "prune": {
+          "idleHours": 24,
+          "maxAgeDays": 7
         }
       }
     },
     "list": [
       { "id": "main","default": true, "name": "default",  "workspace": "/root/openclaw-workspace"}
     ]
+  },
+  "tools": {
+    "elevated": {
+      "enabled": false
+    }
+  },
+  "logging": {
+    "redactSensitive": "tools"
+  },
+  "discovery": {
+    "mdns": {
+      "mode": "off"
+    }
+  },
+  "session": {
+    "dmScope": "per-channel-peer"
+  },
+  "channels": {
+    "whatsapp": {
+      "dmPolicy": "pairing",
+      "groupPolicy": "allowlist",
+      "groupAllowFrom": [],
+      "groups": {
+        "*": {
+          "requireMention": true
+        }
+      }
+    },
+    "telegram": {
+      "dmPolicy": "pairing",
+      "groupPolicy": "allowlist",
+      "groupAllowFrom": [],
+      "groups": {
+        "*": {
+          "requireMention": true
+        }
+      }
+    }
   }
 }
 EOF
