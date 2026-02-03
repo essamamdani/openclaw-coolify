@@ -120,7 +120,8 @@ if [ ! -f "$CONFIG_FILE" ]; then
       "mode": "off",
       "resetOnExit": false
     },
-    "auth": { "mode": "token", "token": "$TOKEN" }
+    "auth": { "mode": "token", "token": "$TOKEN" },
+    "reload": { "mode": "hybrid" }
   },
   "agents": {
     "defaults": {
@@ -145,11 +146,15 @@ if [ ! -f "$CONFIG_FILE" ]; then
           "capDrop": ["ALL"],
           "pidsLimit": 256,
           "memory": "1g",
+          "memorySwap": "2g",
+          "cpus": 1,
           "user": "1000:1000",
           "tmpfs": ["/tmp", "/var/tmp", "/run"]
         },
         "browser": {
-          "enabled": true
+          "enabled": true,
+          "autoStart": true,
+          "autoStartTimeoutMs": 30000
         },
         "prune": {
           "idleHours": 24,
@@ -160,6 +165,16 @@ if [ ! -f "$CONFIG_FILE" ]; then
     "list": [
       { "id": "main","default": true, "name": "default",  "workspace": "/root/openclaw-workspace"}
     ]
+  },
+  "messages": {
+    "queue": {
+      "mode": "collect",
+      "debounceMs": 2000,
+      "cap": 20
+    },
+    "inbound": {
+      "debounceMs": 2000
+    }
   },
   "tools": {
     "elevated": {
@@ -192,6 +207,7 @@ if [ ! -f "$CONFIG_FILE" ]; then
       "dmPolicy": "pairing",
       "groupPolicy": "allowlist",
       "groupAllowFrom": [],
+      "streamMode": "partial",
       "groups": {
         "*": {
           "requireMention": true
