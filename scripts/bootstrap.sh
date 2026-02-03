@@ -35,20 +35,20 @@ seed_agent() {
 
   mkdir -p "$dir"
 
-  # 🔒 NEVER overwrite existing SOUL.md
+  # NEVER overwrite existing SOUL.md
   if [ -f "$dir/SOUL.md" ]; then
-    echo "🧠 SOUL.md already exists for $id — skipping"
+    echo "SOUL.md already exists for $id - skipping"
     return 0
   fi
 
-  # ✅ MAIN agent gets ORIGINAL repo SOUL.md and BOOTSTRAP.md
+  # MAIN agent gets ORIGINAL repo SOUL.md and BOOTSTRAP.md
   if [ "$id" = "main" ]; then
     if [ -f "./SOUL.md" ] && [ ! -f "$dir/SOUL.md" ]; then
-      echo "✨ Copying original SOUL.md to $dir"
+      echo "Copying original SOUL.md to $dir"
       cp "./SOUL.md" "$dir/SOUL.md"
     fi
     if [ -f "./BOOTSTRAP.md" ] && [ ! -f "$dir/BOOTSTRAP.md" ]; then
-      echo "🚀 Seeding BOOTSTRAP.md to $dir"
+      echo "Seeding BOOTSTRAP.md to $dir"
       cp "./BOOTSTRAP.md" "$dir/BOOTSTRAP.md"
     fi
     return 0
@@ -67,7 +67,7 @@ seed_agent "main" "OpenClaw"
 # Generate Config with Prime Directive
 # ----------------------------
 if [ ! -f "$CONFIG_FILE" ]; then
-  echo "🏥 Generating openclaw.json with Prime Directive..."
+  echo "Generating openclaw.json with Prime Directive..."
   TOKEN=$(openssl rand -hex 24 2>/dev/null || node -e "console.log(require('crypto').randomBytes(24).toString('hex'))")
   cat >"$CONFIG_FILE" <<EOF
 {
@@ -251,7 +251,7 @@ export OPENCLAW_STATE_DIR="$OPENCLAW_STATE"
 # Recovery & Monitoring
 # ----------------------------
 if [ -f scripts/recover_sandbox.sh ]; then
-  echo "🛡️  Deploying Recovery Protocols..."
+  echo "Deploying Recovery Protocols..."
   cp scripts/recover_sandbox.sh "$WORKSPACE_DIR/"
   cp scripts/monitor_sandbox.sh "$WORKSPACE_DIR/"
   chmod +x "$WORKSPACE_DIR/recover_sandbox.sh" "$WORKSPACE_DIR/monitor_sandbox.sh"
@@ -280,18 +280,18 @@ fi
 
 echo ""
 echo "=================================================================="
-echo "🦞 OpenClaw is ready!"
+echo "OpenClaw is ready!"
 echo "=================================================================="
 echo ""
-echo "🔑 Access Token: $TOKEN"
+echo "Access Token: $TOKEN"
 echo ""
-echo "🌍 Service URL (Local): http://localhost:${OPENCLAW_GATEWAY_PORT:-18789}?token=$TOKEN"
+echo "Service URL (Local): http://localhost:${OPENCLAW_GATEWAY_PORT:-18789}?token=$TOKEN"
 if [ -n "$SERVICE_FQDN_OPENCLAW" ]; then
-    echo "☁️  Service URL (Public): https://${SERVICE_FQDN_OPENCLAW}?token=$TOKEN"
+    echo "Service URL (Public): https://${SERVICE_FQDN_OPENCLAW}?token=$TOKEN"
     echo "    (Wait for cloud tunnel to propagate if just started)"
 fi
 echo ""
-echo "👉 Onboarding:"
+echo "Onboarding:"
 echo "   1. Access the UI using the link above."
 echo "   2. To approve this machine, run inside the container:"
 echo "      openclaw-approve"
@@ -299,5 +299,5 @@ echo "   3. To start the onboarding wizard:"
 echo "      openclaw onboard"
 echo ""
 echo "=================================================================="
-echo "🔧 Current ulimit is: $(ulimit -n)"
+echo "Current ulimit is: $(ulimit -n)"
 exec openclaw gateway run
