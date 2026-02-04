@@ -105,7 +105,8 @@ RUN pip3 install --break-system-packages \
     botasaurus \
     browser-use \
     playwright && \
-    playwright install-deps
+    playwright install-deps && \
+    playwright install chromium
 
 # ============================================
 # LAYER 9: Global Bun packages (rarely changes - cached)
