@@ -242,6 +242,16 @@ fi
 export OPENCLAW_STATE_DIR="$OPENCLAW_STATE"
 
 # ----------------------------
+# Copy repository skills to workspace
+# ----------------------------
+if [ -d "./skills" ]; then
+  echo "Copying repository skills to workspace..."
+  mkdir -p "$WORKSPACE_DIR/skills"
+  cp -r ./skills/* "$WORKSPACE_DIR/skills/" 2>/dev/null || true
+  echo "Skills copied: $(ls -1 $WORKSPACE_DIR/skills/ 2>/dev/null | tr '\n' ' ')"
+fi
+
+# ----------------------------
 # Sandbox setup
 # ----------------------------
 [ -f scripts/sandbox-setup.sh ] && bash scripts/sandbox-setup.sh
