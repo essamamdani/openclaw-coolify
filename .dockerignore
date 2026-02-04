@@ -2,6 +2,7 @@
 .DS_Store
 .env
 .env.example
+.env.local
 node_modules
 dist
 build
@@ -9,3 +10,8 @@ build
 docs/
 brain/
 tests/
+README.md
+LICENSE
+.github/
+*.md
+!scripts/*.md
