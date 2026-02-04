@@ -35,6 +35,150 @@ This rule exists because:
 - User may have different preferences
 - Transparency and control are essential
 
+---
+
+## 🔥 CRITICAL RULE: NEVER DELETE PRODUCTION FILES
+
+**ABSOLUTELY FORBIDDEN: Deleting ANY file from production without exhaustive validation.**
+
+### ⛔ BEFORE DELETING ANY PRODUCTION FILE:
+
+**MANDATORY VALIDATION CHECKLIST (ALL MUST BE YES):**
+
+1. **Backup Verification**
+   - [ ] Does a recent backup of this file exist?
+   - [ ] Can the backup be restored immediately?
+   - [ ] Have you verified the backup is not corrupted?
+   - [ ] Do you know the EXACT path to the backup?
+
+2. **Impact Analysis**
+   - [ ] Do you understand EXACTLY what this file does?
+   - [ ] Have you identified ALL systems that depend on this file?
+   - [ ] Have you checked if this file contains critical configuration?
+   - [ ] Have you verified no active processes are using this file?
+   - [ ] Will deleting this file break any running services?
+
+3. **Alternative Solutions**
+   - [ ] Have you tried fixing the file instead of deleting it?
+   - [ ] Can you rename/move the file instead of deleting it?
+   - [ ] Is there a way to solve the problem WITHOUT deletion?
+   - [ ] Have you considered editing the file in-place?
+
+4. **Recovery Plan**
+   - [ ] Do you have a TESTED rollback procedure?
+   - [ ] Can you restore the system in under 60 seconds?
+   - [ ] Do you know the exact commands to undo the deletion?
+   - [ ] Have you documented the recovery steps?
+
+5. **User Approval**
+   - [ ] Have you explained the deletion to the user?
+   - [ ] Have you explained the consequences?
+   - [ ] Have you explained the recovery plan?
+   - [ ] Has the user EXPLICITLY approved the deletion?
+
+### ❌ NEVER DELETE THESE FILES:
+
+**Production Configuration Files:**
+- `/root/.openclaw/openclaw.json` - Main configuration (contains OAuth, channels, all settings)
+- `/root/.openclaw/openclaw.json.bak.*` - Backup configurations
+- `/root/.openclaw/agents/*/agent.json` - Agent configurations
+- `/root/.openclaw/credentials/*` - Authentication credentials
+- `/root/.openclaw/channels/*` - Channel configurations
+- Any file in Docker volumes (persistent data)
+
+**If you MUST modify these files:**
+1. **ALWAYS create a backup FIRST** with a unique timestamp
+2. **NEVER use `rm`** - use `mv` to rename instead
+3. **Verify the backup** before making changes
+4. **Test the changes** in a non-production environment first
+
+### ✅ SAFE ALTERNATIVES TO DELETION:
+
+**Instead of deleting, do this:**
+
+```bash
+# ❌ WRONG - Deletes file permanently
+rm /root/.openclaw/openclaw.json
+
+# ✅ CORRECT - Rename with timestamp (recoverable)
+mv /root/.openclaw/openclaw.json /root/.openclaw/openclaw.json.backup-$(date +%Y%m%d-%H%M%S)
+
+# ✅ CORRECT - Copy to backup location first
+cp /root/.openclaw/openclaw.json /root/.openclaw/openclaw.json.backup-before-fix
+# Then edit the original file in-place
+
+# ✅ CORRECT - Use sed/jq to modify without deleting
+jq 'del(.invalid.key)' /root/.openclaw/openclaw.json > /tmp/fixed.json
+cat /tmp/fixed.json > /root/.openclaw/openclaw.json
+```
+
+### 🚨 CONSEQUENCES OF VIOLATING THIS RULE:
+
+**What happens when you delete production files:**
+- ⚠️ **Loss of critical configuration** (OAuth tokens, API keys, channel settings)
+- ⚠️ **Service downtime** (system stops working)
+- ⚠️ **Data loss** (custom settings, user preferences)
+- ⚠️ **User's job at risk** (their boss is watching)
+- ⚠️ **Hours of recovery work** (restoring from backups)
+- ⚠️ **Loss of trust** (user can't rely on you)
+
+### 📋 DELETION APPROVAL TEMPLATE:
+
+**If you believe deletion is necessary, present this to the user:**
+
+```
+⚠️ DELETION REQUEST - REQUIRES APPROVAL
+
+File to delete: [exact path]
+Reason: [why deletion is needed]
+Impact: [what will break]
+Backup location: [where backup is]
+Recovery plan: [exact steps to restore]
+Alternative tried: [what else you attempted]
+
+Consequences if approved:
+- [list all consequences]
+
+Rollback procedure:
+1. [step 1]
+2. [step 2]
+3. [step 3]
+
+Do you approve this deletion? (yes/no)
+```
+
+**ONLY proceed if user explicitly says "yes" or "approve".**
+
+### 🛡️ PROTECTION MEASURES:
+
+**When working on production:**
+1. **Read-only first** - Always read and understand before modifying
+2. **Backup everything** - Create backups before ANY change
+3. **Test in staging** - Never test fixes directly in production
+4. **Incremental changes** - Make small changes, verify each one
+5. **Document everything** - Keep a log of what you're doing
+6. **Ask for help** - If unsure, ask the user before proceeding
+
+### 💡 REMEMBER:
+
+> **"When in doubt, DON'T delete. Rename, backup, or ask."**
+
+> **"Production files are sacred. Treat them like they contain the user's career."**
+
+> **"Every deletion is permanent. Every backup is temporary. Choose wisely."**
+
+---
+
+**This rule was added after a critical incident where deleting openclaw.json caused:**
+- Loss of 9 OAuth profiles
+- Loss of all channel configurations  
+- Loss of custom tool settings
+- Loss of approval configurations
+- System downtime
+- User's job put at risk
+
+**NEVER AGAIN.**
+
 ## 📖 Single Source of Truth
 
 **CRITICAL:** Before working on this repository, read `OPENCLAW_COMPREHENSIVE_GUIDE.md` in the root directory.
