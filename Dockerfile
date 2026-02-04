@@ -152,11 +152,12 @@ RUN curl -fsSL https://claude.ai/install.sh | bash && \
 # ============================================
 WORKDIR /app
 
-# Copy scripts and skills directories
+# Copy scripts, skills, and workspace files
 COPY scripts/ /app/scripts/
 COPY skills/ /app/skills/
 COPY workspace-files/ /app/workspace-files/
-COPY SOUL.md BOOTSTRAP.md /app/
+COPY SOUL.md /app/
+COPY BOOTSTRAP.md /app/
 
 # Set permissions and create symlinks
 RUN chmod +x /app/scripts/*.sh && \
