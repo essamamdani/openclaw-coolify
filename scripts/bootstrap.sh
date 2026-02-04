@@ -252,6 +252,14 @@ if [ -d "./skills" ]; then
 fi
 
 # ----------------------------
+# Copy workspace files (guides, templates)
+# ----------------------------
+if [ -d "./workspace-files" ]; then
+  echo "Copying workspace files..."
+  cp -r ./workspace-files/* "$WORKSPACE_DIR/" 2>/dev/null || true
+fi
+
+# ----------------------------
 # Sandbox setup
 # ----------------------------
 [ -f scripts/sandbox-setup.sh ] && bash scripts/sandbox-setup.sh

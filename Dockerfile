@@ -155,6 +155,7 @@ WORKDIR /app
 # Copy scripts and skills directories
 COPY scripts/ /app/scripts/
 COPY skills/ /app/skills/
+COPY workspace-files/ /app/workspace-files/
 COPY SOUL.md BOOTSTRAP.md /app/
 
 # Set permissions and create symlinks
