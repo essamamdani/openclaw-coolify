@@ -225,6 +225,9 @@ if [ ! -f "$CONFIG_FILE" ]; then
       "groupPolicy": "allowlist",
       "groupAllowFrom": [],
       "streamMode": "partial",
+      "capabilities": {
+        "inlineButtons": "all"
+      },
       "groups": {
         "*": {
           "requireMention": true
