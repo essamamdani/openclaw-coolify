@@ -666,11 +666,56 @@ ssh ***REMOVED-VPS*** "docker network inspect coolify | grep Subnet"
 - Know how Coolify orchestration works (webhook → build → deploy)
 - Understand persistent volumes and what survives container recreation
 
-### 7. Repository Hygiene
-- Keep local repo clean from unnecessary files
-- Remove scripts that aren't needed for production
-- Don't accumulate analysis documents
-- Use `.gitignore` to exclude temporary files
+### 7. Repository Hygiene - KEEP ROOT CLEAN
+
+**CRITICAL: The root directory must contain ONLY essential deployment files.**
+
+**✅ ALLOWED in root:**
+- `Dockerfile` - Container build instructions
+- `docker-compose.yaml` - Service orchestration
+- `.env.example` - Environment variable template
+- `.gitignore` - Git exclusions
+- `.dockerignore` - Docker build exclusions
+- `README.md` - Repository overview
+- `AGENTS.md` - Agent rules and documentation
+- `SOUL.md` - Agent personality
+- `BOOTSTRAP.md` - Bootstrap instructions
+- `coolify.json` - Coolify configuration
+
+**❌ FORBIDDEN in root:**
+- Analysis documents (ANALYSIS.md, INVESTIGATION.md, etc.)
+- Troubleshooting guides (unless explicitly requested)
+- Temporary scripts (test-*.sh, fix-*.py, etc.)
+- Backup files (*.backup, *.bak, *.old)
+- Documentation that belongs in `/docs`
+- Reports, summaries, assessments
+- Any file not required for building/deploying
+
+**📁 PROPER LOCATIONS:**
+- Documentation → `/docs/`
+- Scripts → `/scripts/`
+- Skills → `/skills/`
+- Extensions → `/extensions/`
+- Workspace files → `/workspace-files/`
+
+**🧹 CLEANUP RULES:**
+1. **After completing a task** - Delete any temporary files you created
+2. **Before committing** - Review `git status` and remove unnecessary files
+3. **Use .gitignore** - Add patterns for files that should never be committed
+4. **Ask before creating docs** - Only create documentation if explicitly requested
+5. **Provide guidance in chat** - Don't create files to document your work
+
+**VIOLATION EXAMPLES:**
+- ❌ Creating `TASK_BASED_MODELS.md` in root (should be in /docs or not created)
+- ❌ Creating `PRODUCTION_SAFETY_RULES.md` in root (info belongs in AGENTS.md)
+- ❌ Creating `update-config.py` in root (should be in /scripts or deleted after use)
+- ❌ Creating analysis files after troubleshooting
+
+**CORRECT APPROACH:**
+- ✅ Add rules to existing AGENTS.md instead of creating new files
+- ✅ Provide guidance in chat responses
+- ✅ Delete temporary files immediately after use
+- ✅ Keep root directory minimal and clean
 
 ---
 
