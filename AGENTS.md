@@ -2,6 +2,22 @@
 
 This repository contains a security-hardened OpenClaw deployment for Coolify with Docker Compose.
 
+## 📖 Single Source of Truth
+
+**CRITICAL:** Before working on this repository, read `OPENCLAW_COMPREHENSIVE_GUIDE.md` in the root directory.
+
+This comprehensive guide contains:
+- OpenClaw architecture and core concepts
+- Gateway system and configuration
+- Agent workspace structure
+- Skills system (precedence, structure, installation)
+- Sandboxing (modes, scopes, lifecycle)
+- Security model and best practices
+- Deployment patterns
+- Troubleshooting common issues
+
+**All agents must reference this guide** for understanding OpenClaw infrastructure, configuration, and deployment patterns.
+
 ## Repository Purpose
 
 Deploy OpenClaw (AI assistant) on a VPS using Coolify with:

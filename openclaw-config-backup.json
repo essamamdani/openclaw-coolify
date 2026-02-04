@@ -1,0 +1,314 @@
+﻿{
+  "meta": {
+    "lastTouchedVersion": "2026.2.2-3",
+    "lastTouchedAt": "2026-02-04T12:07:14.146Z"
+  },
+  "wizard": {
+    "lastRunAt": "2026-02-04T05:43:56.364Z",
+    "lastRunVersion": "2026.2.1",
+    "lastRunCommand": "onboard",
+    "lastRunMode": "local"
+  },
+  "logging": {
+    "redactSensitive": "tools"
+  },
+  "ui": {
+    "assistant": {
+      "name": "Zenix"
+    }
+  },
+  "auth": {
+    "profiles": {
+      "google-antigravity:davewitting05@gmail.com": {
+        "provider": "google-antigravity",
+        "mode": "oauth",
+        "email": "davewitting05@gmail.com"
+      },
+      "google-antigravity:kirocode2025@gmail.com": {
+        "provider": "google-antigravity",
+        "mode": "oauth"
+      },
+      "google-antigravity:hydratv.info@gmail.com": {
+        "provider": "google-antigravity",
+        "mode": "oauth"
+      },
+      "google-antigravity:amraly1983@gmail.com": {
+        "provider": "google-antigravity",
+        "mode": "oauth"
+      },
+      "google-antigravity:lujainradyy@gmail.com": {
+        "provider": "google-antigravity",
+        "mode": "oauth",
+        "email": "lujainradyy@gmail.com"
+      },
+      "google-antigravity:hamzah.rady@gmail.com": {
+        "provider": "google-antigravity",
+        "mode": "oauth"
+      },
+      "google-antigravity:lujyamr08@gmail.com": {
+        "provider": "google-antigravity",
+        "mode": "oauth"
+      },
+      "google-antigravity:amrooradi@gmail.com": {
+        "provider": "google-antigravity",
+        "mode": "oauth"
+      },
+      "google-antigravity:me.amrrady@gmail.com": {
+        "provider": "google-antigravity",
+        "mode": "oauth"
+      }
+    }
+  },
+  "models": {
+    "providers": {
+      "mistral": {
+        "baseUrl": "https://api.mistral.ai/v1",
+        "apiKey": "sYFl1JNzl9gPeFeIvEAOujGNpGchJXnI",
+        "models": [
+          {
+            "id": "mistral-large-latest",
+            "name": "Mistral Large",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 200000,
+            "maxTokens": 8192
+          },
+          {
+            "id": "codestral-latest",
+            "name": "Codestral",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 200000,
+            "maxTokens": 8192
+          },
+          {
+            "id": "mistral-small-latest",
+            "name": "Mistral Small",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 200000,
+            "maxTokens": 8192
+          }
+        ]
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "google-antigravity/claude-opus-4-5-thinking",
+        "fallbacks": [
+          "mistral/mistral-large-latest",
+          "mistral/codestral-latest"
+        ]
+      },
+      "models": {
+        "google-antigravity/claude-opus-4-5-thinking": {},
+        "google-antigravity/gemini-3-flash": {}
+      },
+      "workspace": "/root/openclaw-workspace",
+      "envelopeTimestamp": "on",
+      "envelopeElapsed": "on",
+      "cliBackends": {},
+      "heartbeat": {
+        "every": "1h"
+      },
+      "maxConcurrent": 4,
+      "subagents": {
+        "maxConcurrent": 8
+      },
+      "sandbox": {
+        "mode": "all",
+        "workspaceAccess": "ro",
+        "scope": "session",
+        "docker": {
+          "readOnlyRoot": true,
+          "tmpfs": [
+            "/tmp",
+            "/var/tmp",
+            "/run"
+          ],
+          "network": "bridge",
+          "user": "1000:1000",
+          "capDrop": [
+            "ALL"
+          ],
+          "pidsLimit": 256,
+          "memory": "1g",
+          "memorySwap": "2g",
+          "cpus": 1
+        },
+        "browser": {
+          "enabled": true,
+          "autoStart": true,
+          "autoStartTimeoutMs": 30000
+        },
+        "prune": {
+          "idleHours": 24,
+          "maxAgeDays": 7
+        }
+      }
+    },
+    "list": [
+      {
+        "id": "main",
+        "default": true,
+        "name": "default",
+        "workspace": "/root/openclaw-workspace",
+        "model": {
+          "fallbacks": [
+            "google-antigravity/gemini-3-flash"
+          ]
+        }
+      }
+    ]
+  },
+  "tools": {
+    "web": {
+      "search": {
+        "enabled": true,
+        "provider": "brave"
+      },
+      "fetch": {
+        "enabled": true
+      }
+    },
+    "elevated": {
+      "enabled": false
+    }
+  },
+  "messages": {
+    "queue": {
+      "mode": "collect",
+      "debounceMs": 2000,
+      "cap": 20
+    },
+    "inbound": {
+      "debounceMs": 2000
+    },
+    "ackReactionScope": "group-mentions"
+  },
+  "commands": {
+    "native": true,
+    "nativeSkills": true,
+    "text": true,
+    "bash": true,
+    "config": true,
+    "debug": true,
+    "restart": true,
+    "useAccessGroups": true
+  },
+  "session": {
+    "dmScope": "per-channel-peer"
+  },
+  "channels": {
+    "whatsapp": {
+      "dmPolicy": "pairing",
+      "groupAllowFrom": [],
+      "groupPolicy": "allowlist",
+      "mediaMaxMb": 50,
+      "groups": {
+        "*": {
+          "requireMention": true
+        }
+      },
+      "debounceMs": 0
+    },
+    "telegram": {
+      "enabled": true,
+      "dmPolicy": "allowlist",
+      "groups": {
+        "*": {
+          "requireMention": true
+        }
+      },
+      "allowFrom": [
+        "1264715685"
+      ],
+      "groupAllowFrom": [],
+      "groupPolicy": "allowlist",
+      "streamMode": "partial",
+      "webhookUrl": "",
+      "webhookSecret": ""
+    }
+  },
+  "discovery": {
+    "mdns": {
+      "mode": "off"
+    }
+  },
+  "gateway": {
+    "port": 18789,
+    "mode": "local",
+    "bind": "lan",
+    "controlUi": {
+      "enabled": true,
+      "allowInsecureAuth": false
+    },
+    "auth": {
+      "mode": "token",
+      "token": "xK7mR9pL2nQ4wF6jH8vB3cT5yG1dN0sA"
+    },
+    "trustedProxies": [
+      "10.0.0.0/8",
+      "172.16.0.0/12",
+      "192.168.0.0/16"
+    ],
+    "tailscale": {
+      "mode": "off",
+      "resetOnExit": false
+    },
+    "remote": {
+      "token": "xK7mR9pL2nQ4wF6jH8vB3cT5yG1dN0sA"
+    },
+    "reload": {
+      "mode": "hybrid"
+    }
+  },
+  "skills": {
+    "allowBundled": [
+      "*"
+    ],
+    "install": {
+      "nodeManager": "pnpm"
+    }
+  },
+  "plugins": {
+    "enabled": true,
+    "entries": {
+      "whatsapp": {
+        "enabled": true
+      },
+      "telegram": {
+        "enabled": true
+      },
+      "google-antigravity-auth": {
+        "enabled": true
+      }
+    }
+  }
+}
