@@ -9,3 +9,9 @@ node_modules/
 .next/
 dist/
 # docs/
+
+# Local documentation and setup scripts (not needed for build)
+SETUP-COMPLETE.md
+openclaw-security-setup.md
+health-check.sh
+setup-*.sh

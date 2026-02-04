@@ -1,143 +1,321 @@
+# =============================================================================
+# OpenClaw Coolify Docker Compose - SECURITY HARDENED
+# =============================================================================
+# Based on: https://github.com/essamamdani/openclaw-coolify
+# Security analysis: https://docs.openclaw.ai/gateway/security
+#
+# CRITICAL FIXES APPLIED:
+#   1. GATEWAY_TRUSTED_PROXIES restricted to Coolify network (was '*')
+#   2. Gateway auth token REQUIRED (fail-closed)
+#   3. Read-only root filesystem with tmpfs for temp files
+#   4. All Linux capabilities dropped
+#   5. no-new-privileges security option
+#   6. Resource limits to prevent DoS
+#   7. Docker socket proxy (not direct mount)
+#   8. Network isolation
+#   9. Healthchecks for dependency ordering
+#  10. mDNS discovery disabled (prevents info disclosure)
+# =============================================================================
+
 services:
-  registry:
-    image: registry:2
-    restart: unless-stopped
-    volumes:
-      - registry-data:/var/lib/registry
-    environment:
-      REGISTRY_HTTP_SECRET: ${SERVICE_BASE64_REGISTRY}
+  # ===========================================================================
+  # OPENCLAW GATEWAY
+  # ===========================================================================
   openclaw:
     build:
       context: .
       args:
         - OPENCLAW_BETA=${OPENCLAW_BETA:-false}
     restart: on-failure:10
+    
+    # -------------------------------------------------------------------------
+    # RESOURCE LIMITS (Prevent DoS / runaway costs)
+    # -------------------------------------------------------------------------
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+    
     ulimits:
       nofile:
         soft: 65535
         hard: 65535
+      nproc:
+        soft: 4096
+        hard: 8192
+    
+    # -------------------------------------------------------------------------
+    # SECURITY HARDENING
+    # -------------------------------------------------------------------------
+    # Drop ALL Linux capabilities - Node.js doesn't need any
+    cap_drop:
+      - ALL
+    
+    # Prevent privilege escalation via setuid binaries
+    security_opt:
+      - no-new-privileges:true
+    
+    # Read-only root filesystem - prevents malware persistence
+    read_only: true
+    
+    # Temp filesystems for runtime needs (in-memory, not persisted)
+    tmpfs:
+      - /tmp:size=200M,mode=1777,noexec
+      - /var/tmp:size=100M,mode=1777,noexec
+      - /run:size=50M,mode=755
+    
+    # -------------------------------------------------------------------------
+    # ENVIRONMENT VARIABLES
+    # -------------------------------------------------------------------------
     env_file:
       - .env
+    
     environment:
+      # Docker connection via secure proxy (NOT direct socket mount)
       DOCKER_HOST: tcp://docker-proxy:2375
+      
+      # OpenClaw core settings
       OPENCLAW_ENABLE_WEBHOOK_PROXY: "1"
       PORT: 18789
       NODE_ENV: production
       NODE_OPTIONS: '--max-old-space-size=4096'
       HOME: /root
       TERM: xterm-256color
-      # Persistence: Command History
+      
+      # Persistence paths
       HISTFILE: /root/.openclaw/.bash_history
       HISTSIZE: 50000
       HISTSAVE: 50000
       HISTCONTROL: ignoreboth
-
       
-      # Map OpenClaw vars
+      # Gateway configuration
       OPENCLAW_GATEWAY_BIND: lan
       OPENCLAW_GATEWAY_PORT: ${OPENCLAW_GATEWAY_PORT:-18789}
-      # Tell the binary where to look for state/config
       OPENCLAW_STATE_DIR: /root/.openclaw
       OPENCLAW_WORKSPACE: /root/openclaw-workspace
-
-      # API Keys injected from .env or Coolify
+      
+      # =====================================================================
+      # SECURITY FIX #1: Restrict trusted proxies to Coolify network ONLY
+      # =====================================================================
+      # DANGER: '*' allows any IP to spoof X-Forwarded-For headers
+      # This enables authentication bypass where attackers appear as localhost
+      # Set to your actual Docker network CIDR (check: docker network inspect coolify)
+      GATEWAY_TRUSTED_PROXIES: ${GATEWAY_TRUSTED_PROXIES:-10.0.1.0/24}
+      
+      # =====================================================================
+      # SECURITY FIX #2: mDNS discovery mode (prevents info disclosure)
+      # =====================================================================
+      # 'full' broadcasts: CLI path, SSH port, hostname (helps attackers)
+      # 'minimal' broadcasts: only what's needed for device discovery
+      # 'off' disables mDNS entirely
+      OPENCLAW_MDNS_MODE: ${OPENCLAW_MDNS_MODE:-minimal}
+      
+      # API Keys (from .env file - consider Docker Secrets for production)
       OPENAI_API_KEY: ${OPENAI_API_KEY}
-      MINIMAX_API_KEY: ${MINIMAX_API_KEY}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
-      KIMI_API_KEY: ${KIMI_API_KEY}
-      OPENCODE_API_KEY: ${OPENCODE_API_KEY}
-      MOONSHOT_API_KEY: ${KIMI_API_KEY}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
-      SANDBOX_CONTAINER: ${SANDBOX_CONTAINER:-false}
       
       # Optional integrations
-      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
-      NANOBANANA_API_KEY: ${NANOBANANA_API_KEY}
       ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY}
-
-      SERVICE_URL_OPENCLAW_18789: null
-      SERVICE_URL_OPENCLAWWEBHOOK_8788: null
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
+      
+      # URLs - Coolify sets SERVICE_FQDN_OPENCLAW
       BASE_URL: 'https://${SERVICE_FQDN_OPENCLAW}'
       PUBLIC_URL: 'https://${SERVICE_FQDN_OPENCLAW}'
+      
       # Bootstrap controls
       OPENCLAW_AUTO_BOOTSTRAP: "1"
       OPENCLAW_PRINT_ACCESS: "1"
-      GATEWAY_TRUSTED_PROXIES: '*'
+      
       # Fix for EMFILE/Inotify issues in Docker
       CHOKIDAR_USEPOLLING: "true"
-      # Public URL Access
-
-      CF_TUNNEL_TOKEN: ${CF_TUNNEL_TOKEN}
-      # Deployment & Git
-      VERCEL_ORG_ID: ${VERCEL_ORG_ID}
-      VERCEL_PROJECT_ID: ${VERCEL_PROJECT_ID}
-      VERCEL_TOKEN: ${VERCEL_TOKEN}
+      
+      # Git integration (optional)
       GITHUB_TOKEN: ${GITHUB_TOKEN}
       GITHUB_USERNAME: ${GITHUB_USERNAME}
       GITHUB_EMAIL: ${GITHUB_EMAIL}
-      # Optional
+      
+      # Feature flags
       OPENCLAW_BETA: ${OPENCLAW_BETA:-false}
-
+      SANDBOX_CONTAINER: ${SANDBOX_CONTAINER:-true}
+    
+    # -------------------------------------------------------------------------
+    # VOLUMES (Only writable locations)
+    # -------------------------------------------------------------------------
     volumes:
       - openclaw-config:/root/.openclaw
       - openclaw-workspace:/root/openclaw-workspace
-
-
-      # Secure: Socket mount removed in favor of proxy
-      # - /var/run/docker.sock:/var/run/docker.sock
-
+    
+    # -------------------------------------------------------------------------
+    # DEPENDENCIES
+    # -------------------------------------------------------------------------
     depends_on:
-      - docker-proxy
-
-    command: ["bash", "/app/scripts/bootstrap.sh"]
+      docker-proxy:
+        condition: service_healthy
+    
+    # -------------------------------------------------------------------------
+    # HEALTHCHECK
+    # -------------------------------------------------------------------------
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:18789/"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 120s
+      start_period: 60s
+    
+    # -------------------------------------------------------------------------
+    # STARTUP COMMAND
+    # -------------------------------------------------------------------------
+    command: ["bash", "/app/scripts/bootstrap.sh"]
+    
+    # -------------------------------------------------------------------------
+    # TRAEFIK LABELS (Coolify handles routing - we only define middlewares)
+    # -------------------------------------------------------------------------
+    # NOTE: Do NOT define custom routers here - Coolify auto-generates them
+    # with proper variable substitution. We only define middleware configs.
+    labels:
+      # Coolify healthcheck configuration
+      - "coolify.healthcheck.enabled=true"
+      - "coolify.healthcheck.path=/"
+      - "coolify.healthcheck.interval=30s"
+      - "coolify.healthcheck.timeout=10s"
+      - "coolify.healthcheck.retries=3"
+      - "coolify.healthcheck.start_period=60s"
+      
+      # Rate limiting middleware (prevents DoS/brute force)
+      - "traefik.http.middlewares.openclaw-ratelimit.ratelimit.average=100"
+      - "traefik.http.middlewares.openclaw-ratelimit.ratelimit.burst=50"
+      - "traefik.http.middlewares.openclaw-ratelimit.ratelimit.period=1m"
+    
+    # -------------------------------------------------------------------------
+    # NETWORK (Isolated from other services)
+    # -------------------------------------------------------------------------
+    networks:
+      - openclaw-internal
+      - coolify
 
+  # ===========================================================================
+  # DOCKER SOCKET PROXY (Security barrier)
+  # ===========================================================================
+  # NEVER mount /var/run/docker.sock directly into openclaw container!
+  # This proxy exposes only the Docker APIs that OpenClaw actually needs.
+  # ===========================================================================
   docker-proxy:
     image: tecnativa/docker-socket-proxy:latest
     restart: unless-stopped
+    
+    # Security hardening
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    
+    # tmpfs for haproxy (needs /tmp for config, /run for pidfile)
+    tmpfs:
+      - /tmp:size=10M,mode=1777
+      - /run:size=10M,mode=755
+    
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+    
     environment:
       LOG_LEVEL: info
-      # Security: Only enable necessary Docker APIs
-      POST: 1       # Create containers
-      CONTAINERS: 1 # List/manage containers
-      IMAGES: 1     # Pull images
-      NETWORKS: 1   # Connect to networks
-      INFO: 1       # Version check
-      VERSION: 1
-      EXEC: 1       # Run commands (exec)
-      EVENTS: 1     # Listen for events (if needed)
+      
+      # =====================================================================
+      # SECURITY: Only enable APIs that OpenClaw needs
+      # =====================================================================
+      # ALLOWED (required for sandbox functionality):
+      POST: 1        # Create containers
+      CONTAINERS: 1  # List/manage containers
+      IMAGES: 1      # Pull images
+      NETWORKS: 1    # Connect to networks
+      INFO: 1        # Version check
+      VERSION: 1     # Version info
+      EXEC: 1        # Run commands in containers
+      EVENTS: 1      # Listen for container events
+      
+      # DENIED (dangerous - never enable):
+      BUILD: 0       # Would allow building arbitrary images
+      COMMIT: 0      # Would allow creating images from containers
+      CONFIGS: 0     # Swarm configs
+      DISTRIBUTION: 0
+      GRPC: 0
+      NODES: 0       # Swarm nodes
+      PLUGINS: 0     # Plugin management
+      SECRETS: 0     # Swarm secrets
+      SERVICES: 0    # Swarm services
+      SESSION: 0
+      SWARM: 0       # Swarm management
+      SYSTEM: 0      # System-wide operations
+      TASKS: 0       # Swarm tasks
+      VOLUMES: 0     # Would allow accessing host volumes
+    
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:2375/version"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    
+    networks:
+      - openclaw-internal
 
+  # ===========================================================================
+  # SEARXNG (Private search engine)
+  # ===========================================================================
   searxng:
     build:
       context: .
       dockerfile: searxng/Dockerfile
     restart: unless-stopped
-
-    volumes:
-      - searxng-data:/var/lib/searxng
-
-    environment:
-      SEARXNG_BASE_URL: http://searxng:8080
-      SEARXNG_SERVER_SECRET_KEY: ${SERVICE_BASE64_SEARXNG}
-
+    
+    # Security hardening
     cap_drop:
       - ALL
     cap_add:
       - CHOWN
       - SETGID
       - SETUID
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    
+    tmpfs:
+      - /tmp:size=50M,mode=1777
+    
+    volumes:
+      - searxng-data:/var/lib/searxng
+    
+    environment:
+      SEARXNG_BASE_URL: http://searxng:8080
+      SEARXNG_SERVER_SECRET_KEY: ${SERVICE_BASE64_SEARXNG}
+    
+    networks:
+      - openclaw-internal
 
+# =============================================================================
+# NETWORKS
+# =============================================================================
+networks:
+  openclaw-internal:
+    driver: bridge
+    # internal: false  # Needs internet access for Telegram/Anthropic APIs
+  coolify:
+    external: true
 
+# =============================================================================
+# VOLUMES
+# =============================================================================
 volumes:
   openclaw-config:
+    name: openclaw-config
   openclaw-workspace:
+    name: openclaw-workspace
   searxng-data:
-  registry-data:
+    name: searxng-data

@@ -1,3 +1,4 @@
+---
 name: web-utils
 description: Advanced web tools for searching, summarizing, and scraping content.
 metadata:
@@ -14,7 +15,6 @@ metadata:
       - id: "botasaurus"
         kind: "pip"
         pkg: "botasaurus"
-
 ---
 
 # Web Utilities
