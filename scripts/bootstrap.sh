@@ -23,6 +23,19 @@ if [ ! -L "/root/.config/gogcli" ]; then
   ln -sf "$OPENCLAW_STATE/gogcli" /root/.config/gogcli
 fi
 
+# Setup gog credentials from environment variable
+if [ -n "$GOOGLE_CALENDAR_CREDENTIALS_JSON" ]; then
+  echo "$GOOGLE_CALENDAR_CREDENTIALS_JSON" > "$OPENCLAW_STATE/gogcli/credentials.json"
+  chmod 600 "$OPENCLAW_STATE/gogcli/credentials.json"
+  echo "✅ gog credentials configured"
+fi
+
+# Setup gog keyring password
+if [ -n "$GOG_KEYRING_PASSWORD" ]; then
+  export GOG_KEYRING_PASSWORD
+  echo "✅ gog keyring password set"
+fi
+
 # ----------------------------
 # Security: Ensure config file permissions on every startup
 # ----------------------------
