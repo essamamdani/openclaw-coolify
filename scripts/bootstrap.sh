@@ -110,7 +110,7 @@ if [ ! -f "$CONFIG_FILE" ]; then
   "gateway": {
   "port": $OPENCLAW_GATEWAY_PORT,
   "mode": "local",
-    "bind": "lan",
+    "bind": "loopback",
     "controlUi": {
       "enabled": true,
       "allowInsecureAuth": false
