@@ -15,6 +15,15 @@ mkdir -p "$OPENCLAW_STATE/agents/main/sessions"
 chmod 700 "$OPENCLAW_STATE/credentials"
 
 # ----------------------------
+# gog CLI: Symlink config to persistent storage
+# ----------------------------
+mkdir -p "$OPENCLAW_STATE/gogcli"
+if [ ! -L "/root/.config/gogcli" ]; then
+  mkdir -p /root/.config
+  ln -sf "$OPENCLAW_STATE/gogcli" /root/.config/gogcli
+fi
+
+# ----------------------------
 # Security: Ensure config file permissions on every startup
 # ----------------------------
 if [ -f "$CONFIG_FILE" ]; then
