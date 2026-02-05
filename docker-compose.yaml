@@ -60,8 +60,7 @@ services:
       - no-new-privileges:true
     
     # Read-only root filesystem - prevents malware persistence
-    # TEMPORARILY DISABLED to install google-calendar skill
-    read_only: false
+    read_only: true
     
     # Temp filesystems for runtime needs (in-memory, not persisted)
     tmpfs:
