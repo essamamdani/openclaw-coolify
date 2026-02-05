@@ -67,6 +67,7 @@ services:
       - /tmp:size=200M,mode=1777,noexec
       - /var/tmp:size=100M,mode=1777,noexec
       - /run:size=50M,mode=755
+      - /root/.config:size=50M,mode=755
     
     # -------------------------------------------------------------------------
     # ENVIRONMENT VARIABLES
