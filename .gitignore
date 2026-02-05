@@ -1,5 +1,22 @@
-# Secrets
+# Secrets and credentials
 .env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+id_rsa
+id_dsa
+id_ed25519
+*.credentials
+*secret*
+*password*
+!SECURITY_NOTICE.md
+!.secrets-baseline.json
+!.github/SECURITY.md
 
 # System files
 .DS_Store
@@ -47,3 +64,27 @@ setup-*.sh
 !docs/**/*.jpg
 !docs/**/*.jpeg
 !docs/**/*.png
+
+# Backup files
+*.backup
+*.bak
+*.old
+*.orig
+
+# IDE and editor files
+.vscode/
+.idea/
+*.sublime-*
+.project
+.classpath
+.settings/
+
+# OS files
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Temporary files
+tmp/
+temp/
+*.tmp

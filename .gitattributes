@@ -2,3 +2,11 @@
 *.sh text eol=lf
 *.bash text eol=lf
 Dockerfile text eol=lf
+
+# Prevent committing sensitive files (will be blocked by pre-commit hook)
+.env filter=secret
+*.pem filter=secret
+*.key filter=secret
+*.p12 filter=secret
+*.pfx filter=secret
+*credentials* filter=secret
