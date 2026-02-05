@@ -210,6 +210,17 @@ services:
       - "traefik.http.services.openclaw.loadbalancer.healthcheck.interval=30s"
       - "traefik.http.services.openclaw.loadbalancer.healthcheck.timeout=10s"
       
+      # =====================================================================
+      # SECURITY FIX #3: HTTP Basic Auth (prevents authentication bypass)
+      # =====================================================================
+      # Adds a second layer of authentication before OpenClaw token auth
+      # Username: admin
+      # Password: ***REMOVED-PASSWORD***
+      # This prevents the gateway.bind="lan" authentication bypass issue
+      - "traefik.http.middlewares.openclaw-auth.basicauth.users=admin:$$2y$$05$$BCh00Pdtl45N1ruU88ztgecXRUV.azbYvYzt1Qv1isajZ/1x2kEga"
+      - "traefik.http.middlewares.openclaw-auth.basicauth.realm=OpenClaw Dashboard"
+      - "traefik.http.middlewares.openclaw-auth.basicauth.removeheader=true"
+      
       # Rate limiting middleware (prevents DoS/brute force)
       - "traefik.http.middlewares.openclaw-ratelimit.ratelimit.average=100"
       - "traefik.http.middlewares.openclaw-ratelimit.ratelimit.burst=50"

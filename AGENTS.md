@@ -359,12 +359,44 @@ Uses `tecnativa/docker-socket-proxy` to expose only required Docker APIs:
 
 **Why:** Direct socket mount (`/var/run/docker.sock`) gives root access to host.
 
-### 3. Capability Dropping
+### 3. HTTP Basic Authentication (Traefik Layer)
+**CRITICAL SECURITY FIX:** Added to prevent authentication bypass when using `gateway.bind="lan"`.
+
+**Credentials:**
+- **Username:** `admin`
+- **Password:** `***REMOVED-PASSWORD***`
+
+**Why this was needed:**
+- OpenClaw's `gateway.bind="lan"` treats all LAN connections as trusted
+- Traefik proxy connections appear as LAN traffic (from Coolify network)
+- This caused the Gateway to bypass token authentication entirely
+- ANY token (including invalid ones) would grant access
+
+**How it works:**
+1. User accesses ***REMOVED-URL***
+2. Traefik prompts for HTTP Basic Auth (username/password)
+3. After Basic Auth succeeds, user sees OpenClaw dashboard
+4. User must still provide the OpenClaw token for WebSocket connection
+
+**Defense in depth:** Two layers of authentication:
+- Layer 1: HTTP Basic Auth (Traefik middleware)
+- Layer 2: OpenClaw token authentication
+
+**To update the password:**
+```bash
+# Generate new htpasswd entry
+docker run --rm httpd:2.4-alpine htpasswd -nbB admin "YourNewPassword"
+
+# Update docker-compose.yaml with the new hash (escape $ as $$)
+# Then commit and push to trigger rebuild
+```
+
+### 4. Capability Dropping
 All Linux capabilities dropped with `cap_drop: ALL`.
 
 **Why:** Node.js doesn't need any special capabilities.
 
-### 4. Sandboxing
+### 5. Sandboxing
 OpenClaw runs agent tasks in isolated sandbox containers:
 - Image: `openclaw-sandbox:bookworm-slim`
 - Isolated from main container
@@ -376,7 +408,7 @@ OpenClaw runs agent tasks in isolated sandbox containers:
 - `openclaw-sbx-agent-main-telegram-dm-*` - Telegram DM sandbox
 - `openclaw-sbx-agent-main-subagent-*` - Sub-agent sandboxes
 
-### 5. Resource Limits
+### 6. Resource Limits
 - Memory: 4GB limit, 1GB reservation
 - CPU: 2.0 limit, 0.5 reservation
 - File descriptors: 65535
@@ -511,13 +543,36 @@ git push origin main
 
 ### Access OpenClaw Dashboard
 
-**Public URL:** ***REMOVED-URL***?token=***REMOVED-OLD-TOKEN***
+**Public URL:** ***REMOVED-URL***
 
-**SSH Tunnel (for local access):**
+**Authentication (2 layers):**
+
+1. **HTTP Basic Auth (Traefik layer):**
+   - Username: `admin`
+   - Password: `***REMOVED-PASSWORD***`
+
+2. **OpenClaw Token:**
+   - Token: `***REMOVED-TOKEN***`
+   - Append to URL: `?token=***REMOVED-TOKEN***`
+
+**Full URL with token:**
+```
+***REMOVED-URL***?token=***REMOVED-TOKEN***
+```
+
+**Access flow:**
+1. Open the URL in your browser
+2. Browser prompts for HTTP Basic Auth credentials (enter admin/***REMOVED-PASSWORD***)
+3. After Basic Auth succeeds, dashboard loads
+4. Dashboard connects to WebSocket using the token from URL parameter
+
+**SSH Tunnel (for local access without Basic Auth):**
 ```bash
 ssh -L 18789:localhost:18789 ***REMOVED-VPS***
-# Then open: http://localhost:18789
+# Then open: http://localhost:18789?token=***REMOVED-TOKEN***
 ```
+
+**Note:** SSH tunnel bypasses Traefik, so only OpenClaw token is required.
 
 ## Agent Configuration Files
 
