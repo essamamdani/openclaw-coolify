@@ -88,3 +88,29 @@ $RECYCLE.BIN/
 tmp/
 temp/
 *.tmp
+
+# ============================================================================
+# LLM TESTING FILES - NEVER COMMIT THESE
+# ============================================================================
+# These files are for local testing only and contain sensitive information
+API.md
+configure-providers.ps1
+test-all-providers.ps1
+PROVIDER_SETUP_GUIDE.md
+LLM_PROVIDER_TESTING_TASK.md
+llm-test-results/
+agentic-test-results/
+*-test-*.sh
+*-test-*.ps1
+test-llm-*.sh
+test-*.ps1
+discover-providers.sh
+phase*.ps1
+all-models-catalog.json
+shortlisted-models.json
+*TOP*.md
+*FINAL*.md
+*MANUAL*.md
+*NEXT_STEPS*.md
+openclaw-manager.ps1
+openclaw-manager-README.md
