@@ -8,7 +8,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     PIP_ROOT_USER_ACTION=ignore
 
 # ============================================
-# LAYER 1: System packages
+# LAYER 1: System packages (rarely changes)
 # ============================================
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
@@ -97,7 +97,7 @@ ENV UV_INSTALL_DIR="/usr/local/bin"
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # ============================================
-# LAYER 8: Python packages
+# LAYER 8: Python packages (cached)
 # ============================================
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip3 install --break-system-packages \
@@ -176,6 +176,7 @@ FROM base AS runtime
 # ============================================
 ENV PYTHONUSERBASE=/root/.openclaw/python \
     NPM_CONFIG_PREFIX=/root/.openclaw/npm \
+    XDG_CACHE_HOME="/root/.openclaw/cache" \
     PATH="/root/.openclaw/npm/bin:/root/.openclaw/python/bin:${PATH}"
 
 # ============================================
@@ -188,6 +189,7 @@ COPY scripts/ /app/scripts/
 COPY skills/ /app/skills/
 COPY workspace-files/ /app/workspace-files/
 COPY extensions/ /app/extensions/
+COPY openclaw.template.json /app/
 COPY SOUL.md /app/
 COPY BOOTSTRAP.md /app/
 

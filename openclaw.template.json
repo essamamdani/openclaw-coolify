@@ -27,12 +27,15 @@
     "mode": "local",
     "bind": "lan",
     "controlUi": { "enabled": true, "allowInsecureAuth": false },
+    "trustedProxies": ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"],
     "auth": { "mode": "token", "token": "{{ACCESS_TOKEN}}" }
   },
   "agents": {
     "defaults": {
       "workspace": "/root/openclaw-workspace",
       "elevatedDefault": "ask",
+      "envelopeTimestamp": "on",
+      "envelopeElapsed": "on",
       "model": {
         "primary": "google-antigravity/claude-opus-4-5-thinking",
         "fallbacks": [
@@ -60,9 +63,29 @@
           "capDrop": ["ALL"],
           "pidsLimit": 256,
           "memory": "1g",
+          "memorySwap": "2g",
+          "cpus": 1,
           "tmpfs": ["/tmp", "/var/tmp", "/run"]
         }
       }
     }
+  },
+  "messages": {
+    "queue": {
+      "mode": "collect",
+      "debounceMs": 2000,
+      "cap": 20
+    }
+  },
+  "logging": {
+    "redactSensitive": "tools"
+  },
+  "discovery": {
+    "mdns": { "mode": "off" }
+  },
+  "memorySearch": {
+    "enabled": true,
+    "sources": ["memory", "sessions"],
+    "provider": "gemini"
   }
 }

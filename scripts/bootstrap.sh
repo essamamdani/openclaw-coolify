@@ -2,7 +2,7 @@
 set -e
 
 # =============================================================================
-# OpenClaw Bootstrap Script v2.0
+# OpenClaw Bootstrap Script v2.1 (Robust Edition)
 # =============================================================================
 
 OPENCLAW_STATE="/root/.openclaw"
@@ -47,77 +47,96 @@ if [ ! -f "$CONFIG_FILE" ]; then
   TOKEN=$(openssl rand -hex 24 2>/dev/null || node -e "console.log(require('crypto').randomBytes(24).toString('hex'))")
   
   if [ -f "$TEMPLATE_FILE" ]; then
-    # Use template if available, replace TOKEN placeholder
     sed "s/{{ACCESS_TOKEN}}/$TOKEN/g" "$TEMPLATE_FILE" > "$CONFIG_FILE"
   else
-    # Fallback to legacy hardcoded generation if template missing
+    # Minimal fallback
     cat >"$CONFIG_FILE" <<EOF
 {
-  "gateway": {
-    "port": 18789,
-    "auth": { "mode": "token", "token": "$TOKEN" }
-  },
-  "agents": {
-    "defaults": {
-      "workspace": "$WORKSPACE_DIR",
-      "model": {
-        "primary": "google-antigravity/claude-opus-4-5-thinking",
-        "fallbacks": ["google-antigravity/gemini-3-flash"]
-      }
-    }
-  }
+  "gateway": { "port": 18789, "auth": { "mode": "token", "token": "$TOKEN" } },
+  "agents": { "defaults": { "workspace": "$WORKSPACE_DIR" } }
 }
 EOF
   fi
   echo "✅ Configuration generated"
 fi
 
+# -----------------------------------------------------------------------------
+# Fix Dynamic Sandbox Network (Restored from v1.0)
+# -----------------------------------------------------------------------------
+NETWORK_NAME=$(docker network ls --filter name=openclaw-internal --format "{{.Name}}" 2>/dev/null | head -1)
+if [ -n "$NETWORK_NAME" ]; then
+  echo "Updating sandbox network to: $NETWORK_NAME"
+  python3 << PYEOF
+import json
+try:
+    with open("$CONFIG_FILE", "r") as f:
+        config = json.load(f)
+    if "agents" in config and "defaults" in config["agents"]:
+        config["agents"]["defaults"].setdefault("sandbox", {}).setdefault("docker", {})["network"] = "$NETWORK_NAME"
+        with open("$CONFIG_FILE", "w") as f:
+            json.dump(config, f, indent=2)
+    print("✅ Sandbox network synced")
+except Exception as e:
+    print(f"⚠️ Network sync failed: {e}")
+PYEOF
+fi
+
 chmod 600 "$CONFIG_FILE"
 
 # -----------------------------------------------------------------------------
-# Workspace Seedling (Smart Sync)
+# Workspace Seedling & Librarian Setup
 # -----------------------------------------------------------------------------
-# Copy workspace files only if they don't exist (-n) or are newer (-u)
+# Sync workspace files (preserves manual edits like 'Laura' name)
 if [ -d "/app/workspace-files" ]; then
   echo "Syncing workspace files..."
   cp -un /app/workspace-files/* "$WORKSPACE_DIR/" 2>/dev/null || true
 fi
 
-if [ -d "/app/skills" ]; then
-  echo "Syncing repository skills..."
-  mkdir -p "$WORKSPACE_DIR/skills"
-  cp -run /app/skills/* "$WORKSPACE_DIR/skills/" 2>/dev/null || true
-fi
-
-# Ensure Librarian script is present
+# Ensure Librarian script is present in persistent workspace
 if [ -f "/app/scripts/librarian.py" ]; then
   mkdir -p "$WORKSPACE_DIR/scripts"
   cp -u /app/scripts/librarian.py "$WORKSPACE_DIR/scripts/"
 fi
 
 # -----------------------------------------------------------------------------
-# Librarian & Cron Setup
+# Recovery & Monitoring (Restored from v1.0)
 # -----------------------------------------------------------------------------
-# Register the librarian cron job if it doesn't exist
-if command -v openclaw >/dev/null 2>&1; then
-  if ! openclaw cron list | grep -q "librarian"; then
-    echo "Registering Librarian cron job..."
-    openclaw cron add --name "librarian" \
-      --description "Automated knowledge distillation" \
-      --every 12h \
-      --message "Run python3 /root/openclaw-workspace/scripts/librarian.py" \
-      --session isolated \
-      --model "google-antigravity/gemini-3-flash" \
-      --deliver --channel telegram --to "${TELEGRAM_OWNER_ID:-***REMOVED-TELEGRAM-ID***}" || true
-  fi
+if [ -f "/app/scripts/recover_sandbox.sh" ]; then
+  echo "Deploying Recovery Protocols..."
+  cp -u /app/scripts/recover_sandbox.sh "$WORKSPACE_DIR/"
+  cp -u /app/scripts/monitor_sandbox.sh "$WORKSPACE_DIR/"
+  chmod +x "$WORKSPACE_DIR/recover_sandbox.sh" "$WORKSPACE_DIR/monitor_sandbox.sh"
+  
+  # Run initial recovery in background
+  nohup bash "$WORKSPACE_DIR/recover_sandbox.sh" > /dev/null 2>&1 &
+  # Start background monitor
+  nohup bash "$WORKSPACE_DIR/monitor_sandbox.sh" > /dev/null 2>&1 &
 fi
+
+# -----------------------------------------------------------------------------
+# Post-Startup Task (Background Cron Registration)
+# -----------------------------------------------------------------------------
+(
+  # Wait for gateway to be fully ready
+  sleep 15
+  if command -v openclaw >/dev/null 2>&1; then
+    if ! openclaw cron list | grep -q "librarian"; then
+      echo "Registering Librarian cron job..."
+      openclaw cron add --name "librarian" \
+        --description "Automated knowledge distillation" \
+        --every 12h \
+        --message "Run python3 /root/openclaw-workspace/scripts/librarian.py" \
+        --session isolated \
+        --model "google-antigravity/gemini-3-flash" \
+        --deliver --channel telegram --to "${TELEGRAM_OWNER_ID:-***REMOVED-TELEGRAM-ID***}" || true
+    fi
+  fi
+) &
 
 # -----------------------------------------------------------------------------
 # Startup
 # -----------------------------------------------------------------------------
 ulimit -n 65535
-
-# Extract token for banner
 TOKEN=$(grep -o '"token": "[^"]*"' "$CONFIG_FILE" | head -n1 | cut -d'"' -f4)
 
 echo ""
