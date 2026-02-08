@@ -132,7 +132,7 @@ RUN bun install -g \
 # LAYER 11: OpenClaw
 # ============================================
 ARG OPENCLAW_BETA=false
-ARG OPENCLAW_VERSION=2026.2.3-1
+ARG OPENCLAW_VERSION=2026.2.6-3
 ENV OPENCLAW_NO_ONBOARD=1 \
     NPM_CONFIG_UNSAFE_PERM=true
 
