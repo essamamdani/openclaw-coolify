@@ -152,6 +152,14 @@ services:
       - "3000"
     ports:
       - "${MC_PORT:-3000}:3000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mission-control.rule=Host(`${SERVICE_FQDN_MISSION_CONTROL}`)"
+      - "traefik.http.routers.mission-control.entrypoints=websecure"
+      - "traefik.http.routers.mission-control.tls=true"
+      - "traefik.http.routers.mission-control.service=mission-control"
+      - "traefik.http.services.mission-control.loadbalancer.server.port=3000"
+      - "traefik.docker.network=coolify"
     environment:
       PORT: 3000
     volumes:
