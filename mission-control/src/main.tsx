@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import { DemoProvider } from "./demo-provider";
 import App from "./App";
 import "./styles/globals.css";
 
@@ -24,7 +25,6 @@ async function render() {
     );
   } else {
     // Demo mode — no Convex required
-    const { DemoProvider } = await import("./demo-provider");
     console.info(
       "[Mission Control] Running in demo mode. Set VITE_CONVEX_URL for real-time data."
     );

@@ -7,21 +7,12 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm install
 
-# Copy source and build
+# Copy source and build (convex/_generated/ is committed in source)
 COPY . .
 ARG VITE_CONVEX_URL
 ENV VITE_CONVEX_URL=$VITE_CONVEX_URL
 
-# Generate Convex stubs if not present (for demo/non-Convex builds)
-RUN if [ ! -f convex/_generated/api.js ]; then \
-      mkdir -p convex/_generated && \
-      echo 'export const api = {};' > convex/_generated/api.js && \
-      echo 'export const api = {};' > convex/_generated/api.d.ts && \
-      echo 'export type Id<T extends string> = string & { __tableName: T };' > convex/_generated/dataModel.js && \
-      echo 'export type Id<T extends string> = string & { __tableName: T };' > convex/_generated/dataModel.d.ts; \
-    fi
-
-# Build (skip tsc for demo mode compatibility, vite handles types)
+# Build with vite
 RUN npx vite build
 
 # Stage 2: Serve with nginx
