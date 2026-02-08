@@ -172,12 +172,73 @@ services:
     depends_on:
       openclaw:
         condition: service_healthy
+      convex-sync:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 30s
+
+  convex-sync:
+    image: node:20-slim
+    working_dir: /app/mission-control
+    env_file:
+      - .env
+    environment:
+      CONVEX_URL: ${CONVEX_URL:-}
+      CONVEX_DEPLOY_KEY: ${CONVEX_DEPLOY_KEY:-}
+    volumes:
+      - ./:/app:ro
+      - openclaw-data:/data
+    command: >
+      bash -lc '
+        set -e
+        if [ -z "$CONVEX_URL" ]; then
+          echo "convex-sync: CONVEX_URL not set, skipping."
+          exit 0
+        fi
+        cd /app/mission-control
+        # Ensure convex CLI is available (fetched on demand)
+        npx --yes convex@1.17.0 --version >/dev/null
+        # Deploy schema if key provided (idempotent)
+        if [ -n "$CONVEX_DEPLOY_KEY" ]; then
+          CONVEX_DEPLOY_KEY="$CONVEX_DEPLOY_KEY" npx convex deploy --url "$CONVEX_URL" || true
+        fi
+        # Register agents from openclaw.json (upsert)
+        node - <<\"NODE\"
+        const { execSync } = require("child_process");
+        const fs = require("fs");
+        const cfgPath = "/data/.openclaw/openclaw.json";
+        if (!fs.existsSync(cfgPath)) {
+          console.error("convex-sync: config not found at", cfgPath);
+          process.exit(0);
+        }
+        const cfg = JSON.parse(fs.readFileSync(cfgPath, "utf8"));
+        const agents = (cfg.agents && cfg.agents.list) || [];
+        for (const a of agents) {
+          const args = JSON.stringify({
+            agentId: a.id,
+            name: a.name || a.id,
+            role: a.role || "agent",
+            description: a.description || "Imported from openclaw.json",
+            heartbeatInterval: 900000,
+            avatar: a.avatar,
+          });
+          try {
+            console.log("convex-sync: registering", a.id);
+            execSync(`npx convex run agents:register --url "${process.env.CONVEX_URL}" --args '${args}'`, { stdio: "inherit" });
+          } catch (e) {
+            console.error("convex-sync: register failed for", a.id, e.message);
+          }
+        }
+        NODE
+      '
+    restart: "no"
+    depends_on:
+      openclaw:
+        condition: service_healthy
 
 volumes:
   openclaw-data:
