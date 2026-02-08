@@ -114,3 +114,12 @@ shortlisted-models.json
 *NEXT_STEPS*.md
 openclaw-manager.ps1
 openclaw-manager-README.md
+
+# Analysis and summary files
+*_scores_summary.json
+*_analysis.json
+*_results.json
+agentic_scores_summary.json
+
+# Security notices (should be in docs/)
+SECURITY_NOTICE.md
