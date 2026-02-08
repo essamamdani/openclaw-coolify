@@ -129,10 +129,9 @@ RUN bun install -g \
     https://github.com/tobi/qmd
 
 # ============================================
-# LAYER 11: OpenClaw
+# LAYER 11: OpenClaw (auto-updates to latest stable)
 # ============================================
 ARG OPENCLAW_BETA=false
-ARG OPENCLAW_VERSION=2026.2.6-3
 ENV OPENCLAW_NO_ONBOARD=1 \
     NPM_CONFIG_UNSAFE_PERM=true
 
@@ -140,7 +139,7 @@ RUN --mount=type=cache,target=/root/.npm \
     if [ "$OPENCLAW_BETA" = "true" ]; then \
         npm install -g openclaw@beta; \
     else \
-        npm install -g openclaw@${OPENCLAW_VERSION}; \
+        npm install -g openclaw@latest; \
     fi && \
     openclaw --version
 
