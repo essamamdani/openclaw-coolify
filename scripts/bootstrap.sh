@@ -257,13 +257,19 @@ cat >"$MC_SHARED_DIR/mc-config.json" <<MCEOF
 MCEOF
 echo "Mission Control config written to $MC_SHARED_DIR/mc-config.json"
 
-# Start Mission Control sidecar API (agent management)
+# Start Mission Control sidecar API (agent management) with auto-restart
 if [ -f scripts/mc-sidecar.js ]; then
   echo "Starting Mission Control sidecar API on port 18790..."
-  MC_SHARED_DIR="$MC_SHARED_DIR" \
-  OPENCLAW_CONFIG_FILE="$CONFIG_FILE" \
-  OPENCLAW_STATE_DIR="$OPENCLAW_STATE" \
-  node scripts/mc-sidecar.js &
+  (
+    while true; do
+      MC_SHARED_DIR="$MC_SHARED_DIR" \
+      OPENCLAW_CONFIG_FILE="$CONFIG_FILE" \
+      OPENCLAW_STATE_DIR="$OPENCLAW_STATE" \
+      node scripts/mc-sidecar.js 2>&1 || true
+      echo "[mc-sidecar] Crashed, restarting in 3s..."
+      sleep 3
+    done
+  ) &
 fi
 
 # Convex integration (optional)

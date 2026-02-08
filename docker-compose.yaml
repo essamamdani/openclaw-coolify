@@ -87,6 +87,8 @@ services:
       CONVEX_DEPLOY_KEY: ${CONVEX_DEPLOY_KEY:-}
       MISSION_CONTROL_ENABLED: ${MISSION_CONTROL_ENABLED:-false}
 
+    ports:
+      - "${OPENCLAW_GATEWAY_PORT:-18789}:18789"
     volumes:
       - openclaw-data:/data
       - openclaw-config:/root/.openclaw
@@ -146,12 +148,15 @@ services:
       args:
         - VITE_CONVEX_URL=${CONVEX_URL:-}
     restart: unless-stopped
+    ports:
+      - "${MC_PORT:-3000}:3000"
     environment:
       PORT: 3000
     volumes:
       - mc-shared:/mc-shared:ro
     depends_on:
-      - openclaw
+      openclaw:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 30s

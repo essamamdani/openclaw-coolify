@@ -48,7 +48,7 @@ export function ConvexDataProvider({
   };
 
   const assignTask = (taskId: Id<"tasks">, agentId: string) => {
-    assignTaskMut({ taskId, agentId });
+    assignTaskMut({ taskId, assignedTo: agentId, agentId: "human" });
   };
 
   const value: MCData = {
