@@ -148,6 +148,8 @@ services:
       args:
         - VITE_CONVEX_URL=${CONVEX_URL:-}
     restart: unless-stopped
+    expose:
+      - "3000"
     ports:
       - "${MC_PORT:-3000}:3000"
     environment:
