@@ -192,8 +192,6 @@ COPY skills/ /app/skills/
 COPY workspace-files/ /app/workspace-files/
 COPY extensions/ /app/extensions/
 COPY openclaw.template.json /app/
-COPY SOUL.md /app/
-COPY BOOTSTRAP.md /app/
 
 # Set permissions and create symlinks
 RUN chmod +x /app/scripts/*.sh && \
