@@ -420,25 +420,43 @@ OpenClaw runs agent tasks in isolated sandbox containers:
 
 ### Update OpenClaw Version
 
-1. Edit `Dockerfile`:
-```dockerfile
-ARG OPENCLAW_VERSION=2026.2.2-3  # Update version here
-```
+**Auto-Update Enabled:** This deployment automatically pulls the latest stable OpenClaw version on every rebuild.
 
-2. Commit and push:
+**How it works:**
+- Dockerfile uses `npm install -g openclaw@latest`
+- Every time you push changes to GitHub, Coolify rebuilds with the latest version
+- No manual version updates needed
+
+**To trigger an update:**
+1. Make any change to the repository (or use an empty commit):
 ```bash
-git add Dockerfile
-git commit -m "Update OpenClaw to version X.X.X"
+git commit --allow-empty -m "Trigger rebuild to update OpenClaw"
 git push origin main
 ```
 
-3. Coolify will automatically rebuild (5-10 minutes)
+2. Coolify will automatically rebuild (5-10 minutes)
 
-4. Verify:
+3. Verify new version:
 ```bash
 ssh ***REMOVED-VPS*** "docker ps --filter name=openclaw"
 ssh ***REMOVED-VPS*** "docker exec <container-name> openclaw --version"
 ```
+
+**To switch to a specific version (if needed):**
+1. Edit `Dockerfile` line 135:
+```dockerfile
+# Change from:
+npm install -g openclaw@latest
+
+# To:
+ARG OPENCLAW_VERSION=2026.2.6-3
+npm install -g openclaw@${OPENCLAW_VERSION}
+```
+
+2. Commit and push as usual
+
+**To use beta versions:**
+Set `OPENCLAW_BETA=true` in Dockerfile (line 134) to use `openclaw@beta` instead of `@latest`.
 
 ### Update Environment Variables
 

@@ -104,10 +104,13 @@ agentic-test-results/
 *-test-*.ps1
 test-llm-*.sh
 test-*.ps1
+test_*.py
+test*.py
 discover-providers.sh
 phase*.ps1
 all-models-catalog.json
 shortlisted-models.json
+agents_config.json
 *TOP*.md
 *FINAL*.md
 *MANUAL*.md
