@@ -38,7 +38,7 @@
   "gateway": {
     "port": 18789,
     "mode": "local",
-    "bind": "loopback",
+    "bind": "lan",
     "trustedProxies": ["10.0.1.0/24"],
     "controlUi": {
       "enabled": true,
