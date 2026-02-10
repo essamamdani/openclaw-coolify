@@ -103,6 +103,7 @@ services:
       # Gateway configuration
       OPENCLAW_GATEWAY_BIND: lan
       OPENCLAW_GATEWAY_PORT: ${OPENCLAW_GATEWAY_PORT:-18789}
+      OPENCLAW_GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN}
       OPENCLAW_STATE_DIR: /root/.openclaw
       OPENCLAW_WORKSPACE: /root/openclaw-workspace
       
@@ -365,6 +366,13 @@ services:
       - browser-data:/config
     
     # -------------------------------------------------------------------------
+    # TMPFS (for NGINX logs and temp files)
+    # -------------------------------------------------------------------------
+    tmpfs:
+      - /var/log/nginx:size=50M,mode=755
+      - /tmp:size=100M,mode=1777
+    
+    # -------------------------------------------------------------------------
     # SHARED MEMORY (Required for Chrome stability)
     # -------------------------------------------------------------------------
     # Chrome uses shared memory for inter-process communication
@@ -475,6 +483,7 @@ services:
     
     tmpfs:
       - /tmp:size=50M,mode=1777
+      - /etc/ssl/certs:size=10M,mode=755
     
     volumes:
       - searxng-data:/var/lib/searxng
