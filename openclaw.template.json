@@ -39,7 +39,7 @@
     "port": 18789,
     "mode": "local",
     "bind": "lan",
-    "trustedProxies": ["10.0.1.0/24"],
+    "trustedProxies": ["10.0.1.0/24", "fd78:47c7:1c46::/64"],
     "controlUi": {
       "enabled": true,
       "allowInsecureAuth": false
