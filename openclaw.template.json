@@ -42,7 +42,7 @@
     "trustedProxies": ["10.0.1.0/24", "fd78:47c7:1c46::/64"],
     "controlUi": {
       "enabled": true,
-      "allowInsecureAuth": false
+      "allowInsecureAuth": true
     },
     "auth": {
       "mode": "token",
