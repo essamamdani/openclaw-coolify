@@ -69,6 +69,9 @@ try:
         config = json.load(f)
     if "gateway" in config and "auth" in config["gateway"]:
         config["gateway"]["auth"]["token"] = "$OPENCLAW_GATEWAY_TOKEN"
+        # Also update bind setting if OPENCLAW_GATEWAY_BIND is set
+        if "$OPENCLAW_GATEWAY_BIND":
+            config["gateway"]["bind"] = "$OPENCLAW_GATEWAY_BIND"
         with open("$CONFIG_FILE", "w") as f:
             json.dump(config, f, indent=2)
         print("✅ Gateway token updated")

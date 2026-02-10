@@ -101,7 +101,7 @@ services:
       HISTCONTROL: ignoreboth
       
       # Gateway configuration
-      OPENCLAW_GATEWAY_BIND: lan
+      OPENCLAW_GATEWAY_BIND: loopback
       OPENCLAW_GATEWAY_PORT: ${OPENCLAW_GATEWAY_PORT:-18789}
       OPENCLAW_GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN}
       OPENCLAW_STATE_DIR: /root/.openclaw
