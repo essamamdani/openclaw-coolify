@@ -1,5 +1,5 @@
 # =============================================================================
-# OpenClaw Coolify Docker Compose - SECURITY HARDENED
+# OpenClaw Coolify Docker Compose - SECURITY HARDENED + ENHANCED
 # =============================================================================
 # Based on: https://github.com/essamamdani/openclaw-coolify
 # Security analysis: https://docs.openclaw.ai/gateway/security
@@ -15,6 +15,13 @@
 #   8. Network isolation
 #   9. Healthchecks for dependency ordering
 #  10. mDNS discovery disabled (prevents info disclosure)
+#
+# ENHANCEMENTS (2026-02-10):
+#  11. Dedicated browser service for web automation (from Coolify template)
+#  12. Extended AI provider support (OpenRouter, XAI, Groq, etc.)
+#  13. AWS Bedrock integration
+#  14. Hooks system support
+#  15. Discord/Slack channel support
 # =============================================================================
 
 services:
@@ -115,13 +122,63 @@ services:
       # 'off' disables mDNS entirely
       OPENCLAW_MDNS_MODE: ${OPENCLAW_MDNS_MODE:-minimal}
       
-      # API Keys (from .env file - consider Docker Secrets for production)
+      # =====================================================================
+      # AI PROVIDER API KEYS (from .env file)
+      # =====================================================================
+      # Primary providers
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
-      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      MISTRAL_API_KEY: ${MISTRAL_API_KEY}
       
-      # Optional integrations
+      # Extended AI providers (optional)
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      XAI_API_KEY: ${XAI_API_KEY}
+      GROQ_API_KEY: ${GROQ_API_KEY}
+      CEREBRAS_API_KEY: ${CEREBRAS_API_KEY}
+      VENICE_API_KEY: ${VENICE_API_KEY}
+      MOONSHOT_API_KEY: ${MOONSHOT_API_KEY}
+      KIMI_API_KEY: ${KIMI_API_KEY}
+      MINIMAX_API_KEY: ${MINIMAX_API_KEY}
+      ZAI_API_KEY: ${ZAI_API_KEY}
+      AI_GATEWAY_API_KEY: ${AI_GATEWAY_API_KEY}
+      OPENCODE_API_KEY: ${OPENCODE_API_KEY}
+      SYNTHETIC_API_KEY: ${SYNTHETIC_API_KEY}
+      XIAOMI_API_KEY: ${XIAOMI_API_KEY}
+      DEEPGRAM_API_KEY: ${DEEPGRAM_API_KEY}
+      
+      # GitHub Copilot
+      COPILOT_GITHUB_TOKEN: ${COPILOT_GITHUB_TOKEN}
+      
+      # AWS Bedrock
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
+      BEDROCK_PROVIDER_FILTER: ${BEDROCK_PROVIDER_FILTER:-anthropic}
+      
+      # Ollama (self-hosted)
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL}
+      
+      # Base URL overrides
+      MOONSHOT_BASE_URL: ${MOONSHOT_BASE_URL:-https://api.moonshot.ai/v1}
+      KIMI_BASE_URL: ${KIMI_BASE_URL:-https://api.moonshot.ai/anthropic}
+      
+      # Model configuration
+      OPENCLAW_PRIMARY_MODEL: ${OPENCLAW_PRIMARY_MODEL}
+      
+      # =====================================================================
+      # COMMUNICATION CHANNELS
+      # =====================================================================
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN}
+      SLACK_BOT_TOKEN: ${SLACK_BOT_TOKEN}
+      SLACK_APP_TOKEN: ${SLACK_APP_TOKEN}
+      WHATSAPP_ENABLED: ${WHATSAPP_ENABLED}
+      
+      # =====================================================================
+      # OTHER INTEGRATIONS
+      # =====================================================================
       ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY}
       GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
       
@@ -151,6 +208,28 @@ services:
       # Brave Search API (fallback)
       BRAVE_API_KEY: ${BRAVE_API_KEY}
       
+      # =====================================================================
+      # BROWSER AUTOMATION (dedicated browser service)
+      # =====================================================================
+      BROWSER_CDP_URL: ${BROWSER_CDP_URL:-http://browser:9222}
+      BROWSER_DEFAULT_PROFILE: ${BROWSER_DEFAULT_PROFILE:-openclaw}
+      BROWSER_EVALUATE_ENABLED: ${BROWSER_EVALUATE_ENABLED:-true}
+      BROWSER_SNAPSHOT_MODE: ${BROWSER_SNAPSHOT_MODE:-efficient}
+      BROWSER_REMOTE_TIMEOUT_MS: ${BROWSER_REMOTE_TIMEOUT_MS:-1500}
+      BROWSER_REMOTE_HANDSHAKE_TIMEOUT_MS: ${BROWSER_REMOTE_HANDSHAKE_TIMEOUT_MS:-3000}
+      
+      # =====================================================================
+      # HOOKS SYSTEM (custom webhook integrations)
+      # =====================================================================
+      HOOKS_ENABLED: ${HOOKS_ENABLED:-false}
+      HOOKS_PATH: ${HOOKS_PATH:-/root/openclaw-workspace/hooks}
+      
+      # =====================================================================
+      # ADVANCED CONFIGURATION
+      # =====================================================================
+      # Custom APT packages (comma-separated)
+      OPENCLAW_DOCKER_APT_PACKAGES: ${OPENCLAW_DOCKER_APT_PACKAGES}
+      
       # Feature flags
       OPENCLAW_BETA: ${OPENCLAW_BETA:-false}
       SANDBOX_CONTAINER: ${SANDBOX_CONTAINER:-true}
@@ -168,6 +247,8 @@ services:
     # -------------------------------------------------------------------------
     depends_on:
       docker-proxy:
+        condition: service_healthy
+      browser:
         condition: service_healthy
     
     # -------------------------------------------------------------------------
@@ -226,6 +307,80 @@ services:
     networks:
       - openclaw-internal
       - coolify
+
+  # ===========================================================================
+  # BROWSER SERVICE (Web automation with Chrome)
+  # ===========================================================================
+  # Dedicated browser container for web scraping, testing, and automation.
+  # Uses Chrome with remote debugging protocol (CDP) for OpenClaw integration.
+  # ===========================================================================
+  browser:
+    image: 'coollabsio/openclaw-browser:latest'
+    restart: unless-stopped
+    
+    # -------------------------------------------------------------------------
+    # RESOURCE LIMITS
+    # -------------------------------------------------------------------------
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+    
+    # -------------------------------------------------------------------------
+    # SECURITY HARDENING (adapted for Chrome requirements)
+    # -------------------------------------------------------------------------
+    # Chrome needs SYS_ADMIN for sandboxing, but we drop everything else
+    cap_drop:
+      - ALL
+    cap_add:
+      - SYS_ADMIN  # Required for Chrome's internal sandbox
+    
+    security_opt:
+      - no-new-privileges:true
+    
+    # Note: Chrome cannot run with read_only filesystem
+    # We accept this trade-off for browser functionality
+    
+    # -------------------------------------------------------------------------
+    # ENVIRONMENT
+    # -------------------------------------------------------------------------
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ:-Etc/UTC}
+      - CHROME_CLI=--remote-debugging-port=9222 --remote-debugging-address=0.0.0.0
+    
+    # -------------------------------------------------------------------------
+    # VOLUMES
+    # -------------------------------------------------------------------------
+    volumes:
+      - browser-data:/config
+    
+    # -------------------------------------------------------------------------
+    # SHARED MEMORY (Required for Chrome stability)
+    # -------------------------------------------------------------------------
+    # Chrome uses shared memory for inter-process communication
+    shm_size: 2g
+    
+    # -------------------------------------------------------------------------
+    # HEALTHCHECK
+    # -------------------------------------------------------------------------
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':> /dev/tcp/127.0.0.1/9222' || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    
+    # -------------------------------------------------------------------------
+    # NETWORK
+    # -------------------------------------------------------------------------
+    networks:
+      - openclaw-internal
 
   # ===========================================================================
   # DOCKER SOCKET PROXY (Security barrier)
@@ -349,3 +504,5 @@ volumes:
     name: openclaw-home  # Persists Playwright browsers, npm cache, tool caches
   searxng-data:
     name: searxng-data
+  browser-data:
+    name: browser-data  # Persists Chrome profiles and browser data
