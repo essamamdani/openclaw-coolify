@@ -24,10 +24,9 @@ chmod 700 "$OPENCLAW_STATE/credentials"
 # gog CLI: Persistent Configuration
 # -----------------------------------------------------------------------------
 mkdir -p "$OPENCLAW_STATE/gogcli"
-if [ ! -L "/home/node/.config/gogcli" ]; then
-  mkdir -p /home/node/.config
-  ln -sf "$OPENCLAW_STATE/gogcli" /home/node/.config/gogcli
-fi
+# Note: /home/node/.config is tmpfs, so we can't create symlinks there
+# Instead, set GOG_CONFIG_DIR environment variable
+export GOG_CONFIG_DIR="$OPENCLAW_STATE/gogcli"
 
 if [ -n "$GOOGLE_CALENDAR_CREDENTIALS_JSON" ]; then
   echo "$GOOGLE_CALENDAR_CREDENTIALS_JSON" > "$OPENCLAW_STATE/gogcli/credentials.json"
