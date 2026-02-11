@@ -18,6 +18,7 @@ mkdir -p "$OPENCLAW_STATE/credentials"
 mkdir -p "$OPENCLAW_STATE/agents/main/sessions"
 mkdir -p "$OPENCLAW_STATE/python" "$OPENCLAW_STATE/npm"
 chmod 700 "$OPENCLAW_STATE"
+chmod 700 "$OPENCLAW_STATE/credentials"
 
 # -----------------------------------------------------------------------------
 # gog CLI: Persistent Configuration
