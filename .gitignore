@@ -130,3 +130,18 @@ agentic_scores_summary.json
 
 # Security notices (should be in docs/)
 SECURITY_NOTICE.md
+
+# ============================================================================
+# SENSITIVE FILES - NEVER COMMIT THESE
+# ============================================================================
+# Files containing real credentials, tokens, or personal information
+scripts/test-authentication.sh
+workspace-files/telegram_history.json
+**/telegram_history.json
+**/*history*.json
+auth-profiles.json
+**/auth-profiles.json
+
+# Workspace files with sensitive data (will create sanitized versions)
+# workspace-files/USER.md  # Uncomment if you want to block this
+# workspace-files/TOOLS.md  # Uncomment if you want to block this

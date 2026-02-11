@@ -3,20 +3,27 @@ summary: "User profile record"
 ---
 # USER.md - About Your Human
 
-- **Name:** Amr Rady
-- **What to call them:** Amr
-- **Pronouns:** he/him
-- **Timezone:** UTC
-- **Telegram:** ***REMOVED-USERNAME*** (ID: ***REMOVED-TELEGRAM-ID***)
+- **Name:** [Your Name]
+- **What to call them:** [Preferred Name]
+- **Pronouns:** [Pronouns]
+- **Timezone:** [Your Timezone]
+- **Telegram:** @[username] (ID: [telegram_id])
 
 ## Context
 
-- Runs OpenClaw on a ***REMOVED-VPS*** VPS via Coolify
+- Runs OpenClaw on a VPS via Coolify
 - Prefers security-hardened deployments (read-only filesystem, sandboxing)
 - Works with Docker, infrastructure automation
 - Values clean, minimal documentation
-- Timezone: UTC
+
+## Preferences
+
+- [Add your preferences here]
+- [Communication style]
+- [Working hours]
+- [Project priorities]
 
 ---
 
-Update this as you learn more about Amr's preferences and projects.
+Update this file with your actual information after deployment.
+This template is safe for public repositories.

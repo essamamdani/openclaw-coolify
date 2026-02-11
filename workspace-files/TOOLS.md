@@ -8,13 +8,13 @@ This file contains environment-specific details for your VPS deployment.
 ## VPS Details
 
 ### SSH Access
-- **Host:** ***REMOVED-VPS*** VPS
-- **SSH Command:** `ssh ***REMOVED-VPS***` (with sudo access)
-- **Dashboard:** ***REMOVED-URL***
+- **Host:** [Your VPS hostname]
+- **SSH Command:** `ssh [your-host]` (with sudo access)
+- **Dashboard:** [Your dashboard URL]
 - **Token:** (stored securely in container - use `openclaw config get gateway.auth.token` to retrieve)
 
 ### Container Information
-- **Naming Pattern:** `openclaw-qsw0sgwcog4wg88g448sgs-<timestamp>`
+- **Naming Pattern:** `openclaw-[deployment-id]-<timestamp>`
 - **Network:** `coolify` (external), `openclaw-internal` (internal)
 - **Volumes:**
   - `openclaw-config` → `/root/.openclaw`
@@ -85,10 +85,13 @@ ssh ***REMOVED-VPS*** "sudo /root/openclaw-health-check.sh"
 Configured via environment variables in Coolify:
 - `ANTHROPIC_API_KEY` - Claude models
 - `OPENAI_API_KEY` - OpenAI models (optional)
-- `TELEGRAM_BOT_TOKEN` - Telegram bot (***REMOVED-BOT***)
+- `TELEGRAM_BOT_TOKEN` - Telegram bot (@[your-bot-username])
 - `ELEVENLABS_API_KEY` - TTS (optional)
 - `GITHUB_TOKEN` - GitHub operations (optional)
 
 ---
 
 Add your own notes here as you discover environment-specific details.
+
+**Note:** This is a template file safe for public repositories.
+Update with your actual configuration after deployment.
