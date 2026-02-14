@@ -36,8 +36,12 @@ async def main():
         # Try to parse JSON result from LLM, or return string
         try:
             # Basic attempt to find JSON blob
-            print(result)
-        except:
+            if result:
+                json.loads(result)
+                print(result)
+            else:
+                print(json.dumps({"text": result}))
+        except Exception:
             print(json.dumps({"text": result}))
 
     except Exception as e:
