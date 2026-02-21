@@ -101,9 +101,11 @@ RUN ln -s /usr/bin/fdfind /usr/bin/fd || true && \
 # Stage 4: Application dependencies (package installations)
 FROM runtimes AS dependencies
 
-# OpenClaw install
+# OpenClaw install (version: OPENCLAW_VERSION env at build, or latest; OPENCLAW_BETA=true → beta)
 ARG OPENCLAW_BETA=false
+ARG OPENCLAW_VERSION=
 ENV OPENCLAW_BETA=${OPENCLAW_BETA} \
+    OPENCLAW_VERSION=${OPENCLAW_VERSION} \
     OPENCLAW_NO_ONBOARD=1 \
     NPM_CONFIG_UNSAFE_PERM=true
 
@@ -116,18 +118,20 @@ RUN --mount=type=cache,target=/data/.bun/install/cache \
     bun pm -g untrusted && \
     bun install -g @openai/codex @google/gemini-cli opencode-ai @steipete/summarize @hyperbrowser/agent clawhub
 
-# Install OpenClaw with npm cache mount
+# Install OpenClaw (OPENCLAW_BETA=beta | OPENCLAW_VERSION=x.y.z | else latest)
 RUN --mount=type=cache,target=/data/.npm \
+    set -e; \
     if [ "$OPENCLAW_BETA" = "true" ]; then \
-    npm install -g openclaw@beta; \
+      echo "Installing openclaw@beta"; npm install -g openclaw@beta; \
+    elif [ -n "$OPENCLAW_VERSION" ]; then \
+      echo "Installing openclaw@${OPENCLAW_VERSION}"; npm install -g "openclaw@${OPENCLAW_VERSION}"; \
     else \
-    npm install -g openclaw; \
+      echo "Installing openclaw@latest"; npm install -g openclaw@latest; \
     fi && \
     if command -v openclaw >/dev/null 2>&1; then \
-    echo "✅ openclaw binary found"; \
+      echo "✅ openclaw binary found"; openclaw --version 2>/dev/null || true; \
     else \
-    echo "❌ OpenClaw install failed (binary 'openclaw' not found)"; \
-    exit 1; \
+      echo "❌ OpenClaw install failed (binary 'openclaw' not found)"; exit 1; \
     fi
 
 # AI Tool Suite & ClawHub
