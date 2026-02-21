@@ -211,4 +211,9 @@ echo "      openclaw onboard"
 echo ""
 echo "=================================================================="
 echo "🔧 Current ulimit is: $(ulimit -n)"
-exec openclaw gateway run
+# So proxy (Coolify/Traefik) can reach us: pass bind at runtime instead of mutating config.
+if [ -n "${OPENCLAW_GATEWAY_BIND}" ]; then
+  exec openclaw gateway run --bind "$OPENCLAW_GATEWAY_BIND"
+else
+  exec openclaw gateway run
+fi
