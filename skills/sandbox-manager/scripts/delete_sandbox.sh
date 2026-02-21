@@ -11,7 +11,7 @@ if [[ -z "$NAME" ]]; then
 fi
 
 # Get info
-ID=$(query_db "SELECT id FROM sandboxes WHERE name='$NAME';")
+ID=$(query_db "SELECT id FROM sandboxes WHERE name=?;" "$NAME")
 
 if [[ -z "$ID" ]]; then
     echo "❌ Sandbox '$NAME' not found in registry."
@@ -24,7 +24,7 @@ echo "🗑️ Deleting Sandbox: $NAME ($ID)"
 docker rm -f "$ID" || echo "Warning: Container might already be gone."
 
 # Remove from DB
-query_db "DELETE FROM sandboxes WHERE id='$ID';"
+query_db "DELETE FROM sandboxes WHERE id=?;" "$ID"
 
 echo "✅ Sandbox deleted."
 # Note: We purposely do NOT delete the volume by default to preserve data safety 

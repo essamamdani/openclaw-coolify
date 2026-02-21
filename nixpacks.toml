@@ -1,0 +1,60 @@
+# Nixpacks configuration for OpenClaw
+
+[phases.setup]
+nixPkgs = [
+    "nodejs",
+    "python3",
+    "go",
+    "docker-client",
+    "ffmpeg",
+    "imagemagick",
+    "graphviz",
+    "sqlite",
+    "pass",
+    "chromium",
+    "unzip",
+    "jq",
+    "ripgrep",
+    "fd",
+    "fzf",
+    "bat",
+    "pandoc",
+    "poppler_utils",
+    "cloudflared",
+    "github-cli",
+    "uv"
+]
+# Attempt to create /data, but don't fail if we can't (might be created at runtime or volume)
+cmds = ["mkdir -p /data || true", "chmod 777 /data || true"]
+
+[phases.install]
+# We must manually run npm install because we are overriding this phase
+cmds = [
+    "npm install", # Installs dependencies from package.json locally
+    "echo 'Installing python dependencies via python3 -m pip'",
+    "python3 -m pip install --break-system-packages ipython csvkit openpyxl python-docx pypdf botasaurus browser-use playwright",
+    "playwright install-deps || echo 'Warning: playwright install-deps failed, relying on system packages'",
+    "curl -fsSL https://bun.sh/install | bash",
+    "curl -fsSL https://claude.ai/install.sh | bash",
+    "curl -L https://code.kimi.com/install.sh | bash"
+]
+
+[phases.build]
+cmds = [
+    # Symlinks might fail if /usr/local/bin is not writable. We'll handle paths in [start]
+    "ln -sf /data/.claude/bin/claude /usr/local/bin/claude 2>/dev/null || true",
+    "ln -sf /data/.kimi/bin/kimi /usr/local/bin/kimi 2>/dev/null || true",
+    "ln -sf /app/scripts/openclaw-approve.sh /usr/local/bin/openclaw-approve 2>/dev/null || true",
+    "chmod +x scripts/*.sh",
+    # Generate the openclaw-approve binary/script if needed or just alias it
+]
+
+[start]
+# Add node_modules/.bin to PATH so openclaw binary is found. Also add scripts/ so openclaw-approve works if symlink failed.
+cmd = "export PATH=\"$PATH:./node_modules/.bin:/app/scripts:/data/.local/bin:/data/.npm-global/bin:/data/.bun/bin:/data/.bun/install/global/bin:/data/.claude/bin:/data/.kimi/bin\" && bash scripts/bootstrap.sh"
+
+[variables]
+OPENCLAW_NO_ONBOARD = "1"
+NPM_CONFIG_UNSAFE_PERM = "true"
+BUN_INSTALL = "/data/.bun"
+XDG_CACHE_HOME = "/data/.cache"

@@ -32,7 +32,7 @@ VOLUME_NAME="${CONTAINER_NAME}-data"
 echo "📦 Creating Sandbox: $CONTAINER_NAME"
 
 # Check if exists
-EXISTING=$(query_db "SELECT id FROM sandboxes WHERE name='$CONTAINER_NAME';")
+EXISTING=$(query_db "SELECT id FROM sandboxes WHERE name=?;" "$CONTAINER_NAME")
 if [[ -n "$EXISTING" ]]; then
     echo "❌ Sandbox '$CONTAINER_NAME' already exists."
     exit 1
@@ -122,6 +122,6 @@ fi
 echo "🌍 Public URL: $TUNNEL_URL"
 
 # Record in DB
-query_db "INSERT INTO sandboxes (id, name, stack, port, tunnel_url, volume_path) VALUES ('$CID', '$CONTAINER_NAME', '$STACK', $INTERNAL_PORT, '$TUNNEL_URL', '$VOLUME_NAME');"
+query_db "INSERT INTO sandboxes (id, name, stack, port, tunnel_url, volume_path) VALUES (?, ?, ?, ?, ?, ?);" "$CID" "$CONTAINER_NAME" "$STACK" "$INTERNAL_PORT" "$TUNNEL_URL" "$VOLUME_NAME"
 
 echo "✅ Sandbox '$CONTAINER_NAME' created and registered."

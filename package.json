@@ -1,0 +1,14 @@
+{
+  "name": "openclaw-coolify",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "bash scripts/bootstrap.sh"
+  },
+  "dependencies": {
+    "openclaw": "latest"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
