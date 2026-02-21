@@ -4,7 +4,8 @@
 # BuildKit features: cache mounts, parallel builds, improved layer caching
 
 # Stage 1: Base system dependencies (rarely changes)
-FROM node:lts-bookworm-slim AS base
+# Pin Node version to 22 to avoid compatibility issues with better-sqlite3
+FROM node:22-bookworm-slim AS base
 
 # Prevent interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -105,6 +106,9 @@ ARG OPENCLAW_BETA=false
 ENV OPENCLAW_BETA=${OPENCLAW_BETA} \
     OPENCLAW_NO_ONBOARD=1 \
     NPM_CONFIG_UNSAFE_PERM=true
+
+# Install node-gyp first to support native module compilation (e.g., better-sqlite3)
+RUN npm install -g node-gyp
 
 # Install Vercel, Marp, QMD with BuildKit cache mount for faster rebuilds
 RUN --mount=type=cache,target=/data/.bun/install/cache \
