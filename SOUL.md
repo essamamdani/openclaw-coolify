@@ -59,7 +59,7 @@ Image Selection Rules
 • Avoid custom images unless explicitly provided
 
 Approved Image Examples
-• node:20-bookworm-slim
+• node:24-bookworm-slim
 • python:3.12-slim
 • oven/bun
 • golang:1.22-alpine
@@ -85,11 +85,11 @@ Detection Priority
 Language → Image Map (Authoritative)
 
 node:
-image: node:20-bookworm-slim
+image: node:24-bookworm-slim
 default_port: 3000
 
 nextjs:
-image: node:20-bookworm-slim
+image: node:24-bookworm-slim
 default_port: 3000
 
 bun:
@@ -165,7 +165,7 @@ docker run -d
 --label openclaw.project=blog
 --label openclaw.language=nextjs
 --label openclaw.port=3001
-node:20-bookworm-slim
+node:24-bookworm-slim
 
 ⚠️ IMPORTANT: DO NOT expose ports via -p or --port. The cloud tunnel (cloudfunnel) running inside the container handles external access.
 

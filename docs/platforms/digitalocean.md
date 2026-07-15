@@ -61,7 +61,7 @@ ssh root@YOUR_DROPLET_IP
 apt update && apt upgrade -y
 
 # Install Node.js 22
-curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
 apt install -y nodejs
 
 # Install OpenClaw

@@ -139,7 +139,7 @@ To speed up rebuilds, order your Dockerfile so dependency layers are cached.
 This avoids re-running `pnpm install` unless lockfiles change:
 
 ```dockerfile
-FROM node:22-bookworm
+FROM node:24-bookworm
 
 # Install Bun (required for build scripts)
 RUN curl -fsSL https://bun.sh/install | bash

@@ -500,11 +500,11 @@ install_homebrew() {
 check_node() {
     if command -v node &> /dev/null; then
         NODE_VERSION=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
-        if [[ "$NODE_VERSION" -ge 22 ]]; then
+        if [[ "$NODE_VERSION" -ge 24 ]]; then
             echo -e "${SUCCESS}✓${NC} Node.js v$(node -v | cut -d'v' -f2) found"
             return 0
         else
-            echo -e "${WARN}→${NC} Node.js $(node -v) found, but v22+ required"
+            echo -e "${WARN}→${NC} Node.js $(node -v) found, but v24+ required"
             return 1
         fi
     else
@@ -517,8 +517,8 @@ check_node() {
 install_node() {
     if [[ "$OS" == "macos" ]]; then
         echo -e "${WARN}→${NC} Installing Node.js via Homebrew..."
-        brew install node@22
-        brew link node@22 --overwrite --force 2>/dev/null || true
+        brew install node@24
+        brew link node@24 --overwrite --force 2>/dev/null || true
         echo -e "${SUCCESS}✓${NC} Node.js installed"
 	    elif [[ "$OS" == "linux" ]]; then
 	        echo -e "${WARN}→${NC} Installing Node.js via NodeSource..."
@@ -526,24 +526,24 @@ install_node() {
 	        if command -v apt-get &> /dev/null; then
 	            local tmp
 	            tmp="$(mktempfile)"
-	            download_file "https://deb.nodesource.com/setup_22.x" "$tmp"
+            download_file "https://deb.nodesource.com/setup_24.x" "$tmp"
 	            maybe_sudo -E bash "$tmp"
 	            maybe_sudo apt-get install -y nodejs
 	        elif command -v dnf &> /dev/null; then
 	            local tmp
 	            tmp="$(mktempfile)"
-	            download_file "https://rpm.nodesource.com/setup_22.x" "$tmp"
+            download_file "https://rpm.nodesource.com/setup_24.x" "$tmp"
 	            maybe_sudo bash "$tmp"
 	            maybe_sudo dnf install -y nodejs
 	        elif command -v yum &> /dev/null; then
 	            local tmp
 	            tmp="$(mktempfile)"
-	            download_file "https://rpm.nodesource.com/setup_22.x" "$tmp"
+            download_file "https://rpm.nodesource.com/setup_24.x" "$tmp"
 	            maybe_sudo bash "$tmp"
 	            maybe_sudo yum install -y nodejs
 	        else
 	            echo -e "${ERROR}Error: Could not detect package manager${NC}"
-	            echo "Please install Node.js 22+ manually: https://nodejs.org"
+            echo "Please install Node.js 24+ manually: https://nodejs.org"
             exit 1
         fi
         echo -e "${SUCCESS}✓${NC} Node.js installed"
