@@ -6,6 +6,7 @@ services:
       - registry-data:/var/lib/registry
     environment:
       REGISTRY_HTTP_SECRET: ${SERVICE_BASE64_REGISTRY}
+
   openclaw:
     build:
       context: .
@@ -19,13 +20,16 @@ services:
     env_file:
       - .env
     environment:
-      DOCKER_HOST: tcp://docker-proxy:2375
+      # Direct Docker socket for Trigger.dev buildx/buildkit
+      DOCKER_HOST: unix:///var/run/docker.sock
+
       OPENCLAW_ENABLE_WEBHOOK_PROXY: "1"
       PORT: 18789
       NODE_ENV: production
       NODE_OPTIONS: '--max-old-space-size=4096'
       HOME: /data
       TERM: xterm-256color
+
       # Persistence: Command History
       HISTFILE: /data/.bash_history
       HISTSIZE: 50000
@@ -36,9 +40,11 @@ services:
       XDG_CACHE_HOME: /data/.cache
       NPM_CONFIG_CACHE: /data/.npm
       BUN_INSTALL: /data/.bun
+
       # Map OpenClaw vars
       OPENCLAW_GATEWAY_BIND: lan
       OPENCLAW_GATEWAY_PORT: ${OPENCLAW_GATEWAY_PORT:-18789}
+
       # Tell the binary where to look for state/config
       OPENCLAW_STATE_DIR: /data/.openclaw
       OPENCLAW_WORKSPACE: /data/openclaw-workspace
@@ -53,7 +59,7 @@ services:
       MOONSHOT_API_KEY: ${KIMI_API_KEY}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       SANDBOX_CONTAINER: ${SANDBOX_CONTAINER:-false}
-      
+
       # Optional integrations
       GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
       NANOBANANA_API_KEY: ${NANOBANANA_API_KEY}
@@ -63,15 +69,18 @@ services:
       SERVICE_URL_OPENCLAWWEBHOOK_8788: null
       BASE_URL: 'https://${SERVICE_FQDN_OPENCLAW}'
       PUBLIC_URL: 'https://${SERVICE_FQDN_OPENCLAW}'
+
       # Bootstrap controls
       OPENCLAW_AUTO_BOOTSTRAP: "1"
       OPENCLAW_PRINT_ACCESS: "1"
       GATEWAY_TRUSTED_PROXIES: '*'
+
       # Fix for EMFILE/Inotify issues in Docker
       CHOKIDAR_USEPOLLING: "true"
-      # Public URL Access
 
+      # Public URL Access
       CF_TUNNEL_TOKEN: ${CF_TUNNEL_TOKEN}
+
       # Deployment & Git
       VERCEL_ORG_ID: ${VERCEL_ORG_ID}
       VERCEL_PROJECT_ID: ${VERCEL_PROJECT_ID}
@@ -79,6 +88,7 @@ services:
       GITHUB_TOKEN: ${GITHUB_TOKEN}
       GITHUB_USERNAME: ${GITHUB_USERNAME}
       GITHUB_EMAIL: ${GITHUB_EMAIL}
+
       # Optional
       OPENCLAW_BETA: ${OPENCLAW_BETA:-false}
 
@@ -87,11 +97,8 @@ services:
       - openclaw-config:/root/.openclaw
       - openclaw-workspace:/root/openclaw-workspace
 
-      # Secure: Socket mount removed in favor of proxy
-      # - /var/run/docker.sock:/var/run/docker.sock
-
-    depends_on:
-      - docker-proxy
+      # Required for Trigger.dev docker buildx/buildkit
+      - /var/run/docker.sock:/var/run/docker.sock
 
     command: ["bash", "/app/scripts/bootstrap.sh"]
     healthcheck:
@@ -101,6 +108,8 @@ services:
       retries: 3
       start_period: 120s
 
+  # Kept here only if you need it later.
+  # OpenClaw is no longer using this proxy because Trigger.dev buildx was failing through it.
   docker-proxy:
     image: tecnativa/docker-socket-proxy:latest
     restart: unless-stopped
@@ -108,14 +117,14 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       # Security: Only enable necessary Docker APIs
-      POST: 1       # Create containers
-      CONTAINERS: 1 # List/manage containers
-      IMAGES: 1     # Pull images
-      NETWORKS: 1   # Connect to networks
-      INFO: 1       # Version check
+      POST: 1
+      CONTAINERS: 1
+      IMAGES: 1
+      NETWORKS: 1
+      INFO: 1
       VERSION: 1
-      EXEC: 1       # Run commands (exec)
-      EVENTS: 1     # Listen for events (if needed)
+      EXEC: 1
+      EVENTS: 1
       BUILD: 1
       COMMIT: 1
       AUTH: 1
