@@ -116,6 +116,12 @@ services:
       VERSION: 1
       EXEC: 1       # Run commands (exec)
       EVENTS: 1     # Listen for events (if needed)
+      BUILD: 1
+      COMMIT: 1
+      AUTH: 1
+      DISTRIBUTION: 1
+      PING: 1
+      VOLUMES: 1
 
   searxng:
     build:
